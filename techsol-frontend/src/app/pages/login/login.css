@@ -1,0 +1,8 @@
+@use '@angular/material' as mat;
+
+:root {
+  @include mat.form-field-overrides((
+    error-text-color: red,
+    focus-color: cyan,
+  ));
+}

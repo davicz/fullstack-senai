@@ -1,0 +1,23 @@
+<section id="careers" class="py-20">
+  <div class="container mx-auto px-6">
+    <h2 class="text-3xl md:text-4xl font-bold text-center mb-4">Seu Próximo Desafio Começa Aqui.</h2>
+    <p class="max-w-3xl mx-auto text-center text-gray-600 dark:text-gray-400 mb-12">
+      Buscamos talentos que são obcecados por tecnologia e queiram construir o futuro conosco.
+    </p>
+    <div class="bg-white dark:bg-[#0c1323] rounded-lg shadow-lg p-8">
+      <div class="space-y-6">
+        @for(job of jobOpenings; track job.title) {
+          <div class="md:flex justify-between items-center p-4 border-b border-gray-200 dark:border-gray-700 last:border-b-0">
+            <div>
+              <h3 class="text-xl font-semibold text-cyan-500">{{ job.title }}</h3>
+              <p class="text-gray-600 dark:text-gray-400">{{ job.location }} &middot; {{ job.type }}</p>
+            </div>
+            <a href="#contact-form" class="mt-4 md:mt-0 inline-block bg-cyan-500 text-white px-6 py-2 rounded-lg hover:bg-cyan-600 transition-colors">
+              Candidatar-se
+            </a>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+</section>

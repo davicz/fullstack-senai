@@ -1,0 +1,24 @@
+<h1 mat-dialog-title class="font-bold">Convidar Novo Colaborador</h1>
+
+<div mat-dialog-content>
+  <p class="mb-4">Digite o e-mail do colaborador que você deseja convidar. Ele receberá um link para finalizar o cadastro.</p>
+  <form [formGroup]="inviteForm">
+    <mat-form-field class="w-full">
+      <mat-label>E-mail do Colaborador</mat-label>
+      <input matInput formControlName="email" placeholder="ex: joao.silva@techsol.com" required>
+      <mat-error *ngIf="email?.hasError('required')">
+        O campo de e-mail é obrigatório.
+      </mat-error>
+      <mat-error *ngIf="email?.hasError('email')">
+        Por favor, insira um e-mail válido.
+      </mat-error>
+    </mat-form-field>
+  </form>
+</div>
+
+<div mat-dialog-actions align="end">
+  <button mat-button (click)="onCancel()">Cancelar</button>
+  <button mat-flat-button color="primary" [disabled]="inviteForm.invalid" (click)="onConfirm()">
+    Confirmar e Enviar
+  </button>
+</div>

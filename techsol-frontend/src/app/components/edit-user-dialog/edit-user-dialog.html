@@ -1,0 +1,39 @@
+<h1 mat-dialog-title>Editar Colaborador: {{ data.user.name }}</h1>
+<div mat-dialog-content>
+  <form [formGroup]="editForm">
+    <p><strong>E-mail:</strong> {{ data.user.email }}</p>
+    <p><strong>CPF:</strong> {{ data.user.cpf }}</p>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Perfil</mat-label>
+      <mat-select formControlName="role_id">
+        @for(role of roles; track role.id) {
+        <mat-option [value]="role.id">{{ role.name }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Nova Senha (Opcional)</mat-label>
+      <input
+        matInput
+        formControlName="password"
+        type="password"
+        placeholder="Deixe em branco para não alterar"
+      />
+    </mat-form-field>
+  </form>
+</div>
+<div mat-dialog-actions align="end">
+  <button mat-button (click)="onCancel()">Cancelar</button>
+  <button
+    mat-raised-button
+    color="primary"
+    (click)="onSave()"
+    [disabled]="isLoading"
+  >
+    @if(isLoading) {
+    <mat-spinner [diameter]="24"></mat-spinner>
+    } @else { Salvar }
+  </button>
+</div>

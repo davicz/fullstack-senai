@@ -1,0 +1,32 @@
+<div class="invite-container">
+  <h1>Convidar Novo Colaborador</h1>
+  <p>Insira o e-mail do colaborador que você deseja convidar para a plataforma.</p>
+  <div class="invite-form">
+  <mat-form-field appearance="outline">
+      <mat-label>E-mail do Colaborador</mat-label>
+      <input matInput [formControl]="emailControl" placeholder="exemplo@empresa.com" required>
+      @if (emailControl.hasError('email') && !emailControl.hasError('required')) {
+        <mat-error>Por favor, insira um e-mail válido.</mat-error>
+      }
+      @if (emailControl.hasError('required')) {
+        <mat-error>O e-mail é obrigatório.</mat-error>
+      }
+    </mat-form-field>
+
+    <button mat-raised-button color="primary" type="button" (click)="onSubmit()" [disabled]="emailControl.invalid || isLoading">
+      @if(isLoading) {
+        <mat-spinner [diameter]="24"></mat-spinner>
+      } @else {
+        Enviar Convite
+      }
+    </button>
+    </div>
+  
+  @if (feedbackMessage) {
+    <div class="feedback-message" [class.error]="isError">
+      {{ feedbackMessage }}
+    </div>
+  }
+
+  <a mat-stroked-button routerLink="/admin" class="back-button">Voltar para o Painel</a>
+</div>

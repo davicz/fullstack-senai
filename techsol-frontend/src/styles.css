@@ -1,0 +1,3 @@
+@import "tailwindcss";
+@source inline("fa-linkedin, fa-instagram, fa-facebook, fa-twitter, fa-github from 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css' as fonts");
+@custom-variant dark (&:where(.dark, .dark *));

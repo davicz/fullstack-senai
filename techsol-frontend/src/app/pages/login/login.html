@@ -1,0 +1,37 @@
+<div class="flex items-center justify-center min-h-screen">
+  <div class="w-full max-w-md m-4 bg-white dark:bg-[#0c1323] rounded-2xl shadow-2xl p-8">
+    <h2 class="text-3xl font-bold mb-2 text-center">Acesse a Plataforma</h2>
+    <p>Acesse a plataforma de onboarding.</p>     
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+      <mat-form-field appearance="outline">
+        <mat-label>CPF</mat-label>
+        <input
+          matInput 
+          formControlName="cpf" 
+          mask="000.000.000-00">
+      </mat-form-field>
+      
+      <mat-form-field appearance="outline">
+        <mat-label>Senha</mat-label>
+        <input matInput formControlName="password" type="password">
+      </mat-form-field>
+      
+      @if(errorMessage) {
+        <p class="error-message">{{ errorMessage }}</p>
+      }
+
+      <div class="form-actions">
+        <a routerLink="/esqueci-senha">Esqueci minha senha</a>
+        <button mat-raised-button color="primary" type="submit" [disabled]="loginForm.invalid || isLoading">
+          @if(isLoading) {
+            <mat-spinner [diameter]="24"></mat-spinner>
+          } @else {
+            Entrar
+          }
+        </button>
+      </div>
+    </form>
+  </div>
+  <div class="image-panel">
+    </div>
+</div>

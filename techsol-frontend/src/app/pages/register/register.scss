@@ -1,0 +1,95 @@
+.register-container {
+  display: flex;
+}
+
+.register-panel {
+  width: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 40px;
+  overflow-y: auto;
+}
+
+.register-form-wrapper {
+  max-width: 600px;
+  width: 100%;
+
+  h2 {
+    font-size: 2rem;
+    font-weight: 500;
+  }
+
+  p {
+    font-size: 1rem;
+    color: #666;
+    margin-bottom: 30px;
+  }
+  
+  form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.6rem; // Usando 'gap' para um espaçamento consistente e responsivo
+}
+
+  .password-group, .address-fields, .address-fields-2 {
+    display: flex;
+    gap: 15px;
+  }
+  
+  mat-form-field {
+    flex: 1;
+  }
+
+  .error-message {
+    color: #f44336;
+    font-size: 0.9rem;
+    text-align: center;
+  }
+
+  .success-message {
+    text-align: center;
+    padding: 40px;
+    border: 1px solid #4caf50;
+    background-color: #e8f5e9;
+    color: #2e7d32;
+    border-radius: 8px;
+    font-size: 1.2rem;
+  }
+  
+  button[type="submit"] {
+    margin-top: 10px;
+    padding: 10px 0;
+    font-size: 1rem;
+  }
+}
+
+.image-panel {
+  width: 50%;
+  background-image: url('https://images.unsplash.com/photo-1517048676732-d65bc937f952?q=80&w=2070&auto=format&fit=crop');
+  background-size: cover;
+  background-position: center;
+}
+
+@media (max-width: 992px) {
+  .register-panel {
+    width: 60%;
+  }
+  .image-panel {
+    width: 40%;
+  }
+}
+
+@media (max-width: 768px) {
+  .image-panel {
+    display: none;
+  }
+  .register-panel {
+    width: 100%;
+    padding: 20px;
+  }
+}
+
+.address-fields {
+  margin-top: 2rem; /* Adiciona um espaço extra acima do grupo do CEP */
+}
