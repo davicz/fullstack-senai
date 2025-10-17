@@ -9,12 +9,15 @@ class RegionalDepartment extends Model
 {
     use HasFactory;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
-     */
     protected $fillable = [
         'name',
     ];
+
+    /**
+     * Define a relação: um Departamento Regional TEM MUITAS Unidades Operacionais.
+     */
+    public function operationalUnits()
+    {
+        return $this->hasMany(OperationalUnit::class);
+    }
 }

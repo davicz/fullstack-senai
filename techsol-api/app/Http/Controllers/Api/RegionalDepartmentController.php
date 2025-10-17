@@ -12,8 +12,8 @@ class RegionalDepartmentController extends Controller
     // Método para listar todos os Departamentos Regionais
     public function index()
     {
-        // Simples verificação de permissão
-        if (Auth::user()->role->slug !== 'national_admin') {
+        // NOVA VERIFICAÇÃO DE PERMISSÃO
+        if (!Auth::user()->roles->contains('slug', 'national_admin')) {
             return response()->json(['message' => 'Acesso não autorizado.'], 403);
         }
 
@@ -23,7 +23,8 @@ class RegionalDepartmentController extends Controller
     // Método para criar um novo Departamento Regional
     public function store(Request $request)
     {
-        if (Auth::user()->role->slug !== 'national_admin') {
+        // NOVA VERIFICAÇÃO DE PERMISSÃO
+        if (!Auth::user()->roles->contains('slug', 'national_admin')) {
             return response()->json(['message' => 'Acesso não autorizado.'], 403);
         }
 

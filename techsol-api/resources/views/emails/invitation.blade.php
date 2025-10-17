@@ -9,7 +9,7 @@
     <p>Por favor, clique no link abaixo para continuar. Este link é válido por 24 horas.</p>
     
     {{-- link que o usuário irá clicar --}}
-    <a href="{{ url('http://localhost:4200/cadastro/' . $invitation->token) }}">Finalizar Cadastro</a>
+    <a href="{{ env('FRONTEND_URL', 'http://localhost:4200') }}/register/{{ $invitation->token }}">Finalizar Cadastro</a>
     
     <p>Se você não solicitou este convite, por favor, ignore este e-mail.</p>
     <p>Obrigado,<br>Equipe TechnologySolutions</p>

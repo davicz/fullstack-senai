@@ -54,11 +54,11 @@ class User extends Authenticatable
     /**
      * Relação: Um usuário pertence a um Perfil (Role).
      */
+    // app/Models/User.php
     public function roles()
     {
-    return $this->belongsToMany(Role::class, 'user_role')
-                ->withPivot('regional_department_id', 'operational_unit_id')
-                ->withTimestamps();
+        // Removemos o withPivot, pois não há mais colunas extras
+        return $this->belongsToMany(Role::class, 'user_role');
     }
 
     /**

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Invitation;
+use App\Models\Role;
 use App\Models\OperationalUnit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -13,40 +14,91 @@ use Illuminate\Support\Str;
 
 class InviteController extends Controller
 {
-    public function store(Request $request)
+    /**
+     * ETAPA 1: Inicia um novo convite com os dados pessoais.
+     */
+    public function start(Request $request)
     {
-        $loggedInUser = Auth::user();
-
-        // Valida os dados recebidos
         $validatedData = $request->validate([
             'email' => 'required|email|unique:users,email',
-            'operational_unit_id' => 'required|exists:operational_units,id'
+            'cpf' => 'required|string|size:11|unique:users,cpf',
         ]);
 
-        // Lógica de Permissão
-        if ($loggedInUser->role->slug === 'unit_admin' && $loggedInUser->operational_unit_id != $validatedData['operational_unit_id']) {
-            // Um admin de unidade não pode convidar para uma UO que não é a sua
-            return response()->json(['message' => 'Permissão negada. Você só pode convidar usuários para a sua própria Unidade Operacional.'], 403);
-        }
-        
-        // Apenas Admin Nacional e Admin de Unidade podem convidar
-        if (!in_array($loggedInUser->role->slug, ['national_admin', 'unit_admin'])) {
-            return response()->json(['message' => 'Acesso não autorizado para criar convites.'], 403);
-        }
-
-        // Busca o DR a partir da UO para salvar a informação completa no convite
-        $unit = OperationalUnit::find($validatedData['operational_unit_id']);
-
+        // Cria o convite no primeiro estado
         $invitation = Invitation::create([
             'email' => $validatedData['email'],
-            'operational_unit_id' => $validatedData['operational_unit_id'],
-            'regional_department_id' => $unit->regional_department_id,
-            'token' => Str::random(40),
-            'expires_at' => now()->addHours(24)
+            'cpf' => $validatedData['cpf'],
+            'status' => 'step_1_pending_profiles',
         ]);
 
-        // Mail::to($invitation->email)->send(new InvitationEmail($invitation)); // Descomente para enviar e-mail
+        return response()->json($invitation, 201);
+    }
 
-        return response()->json(['message' => 'Convite enviado com sucesso!', 'invitation' => $invitation], 201);
+    /**
+     * ETAPA 2: Associa os perfis selecionados ao convite.
+     */
+    public function assignRoles(Request $request, Invitation $invitation)
+    {
+        $validatedData = $request->validate([
+            'roles' => 'required|array',
+            'roles.*' => 'exists:roles,id', // Garante que os IDs dos perfis são válidos
+        ]);
+        
+        // Associa os perfis na tabela pivô (ainda sem contexto)
+        $invitation->roles()->sync($validatedData['roles']);
+        
+        // Atualiza o status do convite
+        $invitation->status = 'step_2_pending_context';
+        $invitation->save();
+
+        // Retorna o convite com os perfis associados para a próxima etapa
+        return response()->json($invitation->load('roles'));
+    }
+
+    /**
+     * ETAPA 3: Atribui os contextos (escolas/regionais) a cada perfil.
+     */
+    public function assignContext(Request $request, Invitation $invitation)
+    {
+        //dd('Cheguei no método assignContext!');
+        $validatedData = $request->validate([
+            'assignments' => 'required|array',
+            'assignments.*.role_id' => 'required|exists:roles,id',
+            'assignments.*.operational_unit_id' => 'nullable|exists:operational_units,id',
+            'assignments.*.regional_department_id' => 'nullable|exists:regional_departments,id',
+        ]);
+
+        foreach ($validatedData['assignments'] as $assignment) {
+            $invitation->roles()->updateExistingPivot($assignment['role_id'], [
+                'operational_unit_id' => $assignment['operational_unit_id'] ?? null,
+                'regional_department_id' => $assignment['regional_department_id'] ?? null,
+            ]);
+        }
+        
+        $invitation->status = 'step_3_pending_confirmation';
+        $invitation->save();
+
+        return response()->json($invitation->load('roles'));
+    }
+
+    /**
+     * ETAPA 4: Confirma e envia o convite.
+     */
+    public function send(Invitation $invitation)
+    {
+        //if ($invitation->status !== 'step_3_pending_confirmation') {
+        //    return response()->json(['message' => 'Convite não está pronto para ser enviado.'], 422);
+        //}
+
+        // Gera o token final e data de expiração
+        $invitation->token = Str::random(40);
+        $invitation->expires_at = now()->addHours(24);
+        $invitation->status = 'sent';
+        $invitation->save();
+
+        // Dispara o e-mail (atualmente configurado para log)
+        Mail::to($invitation->email)->send(new InvitationEmail($invitation));
+
+        return response()->json(['message' => 'Convite enviado com sucesso!']);
     }
 }

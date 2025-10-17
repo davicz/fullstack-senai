@@ -2,22 +2,23 @@
 
 namespace Database\Seeders;
 
+use App\Models\Role;
 use Illuminate\Database\Seeder;
-use App\Models\Role; // Importamos o Model 'Role' para poder usá-lo
+use Illuminate\Support\Facades\DB;
 
 class RoleSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
-        Role::query()->delete(); // Limpa a tabela antes de popular
+        // Limpa a tabela para garantir consistência
+        DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+        Role::truncate();
+        DB::statement('SET FOREIGN_KEY_CHECKS=1;');
 
-        Role::create(['name' => 'Administrador Senai', 'slug' => 'national_admin']);     // [cite: 29]
-        Role::create(['name' => 'Administrador Regional', 'slug' => 'regional_admin']); // [cite: 32]
-        Role::create(['name' => 'Administrador Escola', 'slug' => 'school_admin']);     // [cite: 37]
-        Role::create(['name' => 'Docente', 'slug' => 'teacher']);                        // [cite: 39]
-        Role::create(['name' => 'Aluno', 'slug' => 'student']);                          // [cite: 42]
+        Role::create(['name' => 'Administrador Senai', 'slug' => 'national_admin']);
+        Role::create(['name' => 'Administrador Regional', 'slug' => 'regional_admin']);
+        Role::create(['name' => 'Administrador Escola', 'slug' => 'unit_admin']); // <- O NOME CORRETO
+        Role::create(['name' => 'Docente', 'slug' => 'teacher']);
+        Role::create(['name' => 'Aluno', 'slug' => 'student']);
     }
 }

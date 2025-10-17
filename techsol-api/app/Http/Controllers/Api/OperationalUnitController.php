@@ -9,19 +9,23 @@ use Illuminate\Support\Facades\Auth;
 
 class OperationalUnitController extends Controller
 {
-    // Método para listar todas as Unidades Operacionais
+    // Método para listar Unidades Operacionais
     public function index()
     {
         $user = Auth::user();
 
         // Admin Nacional vê todas as UOs
-        if ($user->role->slug === 'national_admin') {
+        if ($user->roles->contains('slug', 'national_admin')) {
             return OperationalUnit::orderBy('name')->get();
         }
 
         // Admin Regional vê apenas as UOs do seu DR
-        if ($user->role->slug === 'regional_admin') {
-            return OperationalUnit::where('regional_department_id', $user->regional_department_id)
+        if ($user->roles->contains('slug', 'regional_admin')) {
+            // Precisamos encontrar a qual DR este admin pertence
+            $regionalAdminRole = $user->roles->where('slug', 'regional_admin')->first();
+            $drId = $regionalAdminRole->pivot->regional_department_id;
+            
+            return OperationalUnit::where('regional_department_id', $drId)
                 ->orderBy('name')
                 ->get();
         }
@@ -35,7 +39,7 @@ class OperationalUnitController extends Controller
         $user = Auth::user();
         
         // Apenas Admin Nacional e Regional podem criar UOs
-        if (!in_array($user->role->slug, ['national_admin', 'regional_admin'])) {
+        if (!$user->roles->contains('slug', 'national_admin') && !$user->roles->contains('slug', 'regional_admin')) {
             return response()->json(['message' => 'Acesso não autorizado.'], 403);
         }
         
@@ -45,8 +49,11 @@ class OperationalUnitController extends Controller
         ]);
 
         // Se quem cria é um Admin Regional, força a criação dentro do seu próprio DR
-        if ($user->role->slug === 'regional_admin') {
-            if ($validatedData['regional_department_id'] != $user->regional_department_id) {
+        if ($user->roles->contains('slug', 'regional_admin')) {
+            $regionalAdminRole = $user->roles->where('slug', 'regional_admin')->first();
+            $drId = $regionalAdminRole->pivot->regional_department_id;
+
+            if ($validatedData['regional_department_id'] != $drId) {
                 return response()->json(['message' => 'Permissão para criar UO apenas no seu próprio Departamento Regional.'], 403);
             }
         }

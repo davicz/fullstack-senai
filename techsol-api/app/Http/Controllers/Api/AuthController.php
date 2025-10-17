@@ -6,9 +6,10 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\Role;
+use App\Models\Invitation;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
 {
@@ -17,6 +18,7 @@ class AuthController extends Controller
      */
     public function login(Request $request)
     {
+        // --- ESTE BLOCO ESTAVA FALTANDO ---
         $request->validate([
             'login' => 'required|string',
             'password' => 'required|string',
@@ -28,6 +30,7 @@ class AuthController extends Controller
             $loginField => $request->login,
             'password' => $request->password
         ];
+        // --- FIM DO BLOCO QUE FALTAVA ---
 
         if (! Auth::attempt($credentials)) {
             throw ValidationException::withMessages([
@@ -35,24 +38,24 @@ class AuthController extends Controller
             ]);
         }
 
-        // A LINHA DO ERRO FOI REMOVIDA DAQUI. O Auth::user() JÁ CARREGA OS PERFIS.
         $user = Auth::user();
 
-        // Se o usuário só tem um perfil, loga direto.
+        if ($user->roles->isEmpty()) {
+            return response()->json(['message' => 'Este usuário não possui perfis de acesso configurados.'], 403);
+        }
+        
         if ($user->roles->count() === 1) {
-            $role = $user->roles->first();
-            $token = $user->createToken('auth-token', ['user_role_id:' . $role->pivot->id])->plainTextToken;
+            $token = $user->createToken('auth-token')->plainTextToken;
 
             return response()->json([
                 'message' => 'Login bem-sucedido!',
                 'access_token' => $token,
                 'user' => $user,
-                'selected_role' => $role,
+                'selected_role' => $user->roles->first(),
             ]);
         }
         
-        // Se tem múltiplos perfis, cria um token temporário só para a seleção.
-        $temporaryToken = $user->createToken('temporary-token', ['select-profile'], now()->addMinutes(5))->plainTextToken;
+        $temporaryToken = $user->createToken('temporary-token', [], now()->addMinutes(5))->plainTextToken;
 
         return response()->json([
             'message' => 'Múltiplos perfis encontrados. Por favor, selecione um.',
@@ -80,7 +83,7 @@ class AuthController extends Controller
         
         $user->tokens()->delete();
 
-        $finalToken = $user->createToken('auth-token', ['role_id:' . $selectedRolePivot->pivot->id])->plainTextToken;
+        $finalToken = $user->createToken('auth-token')->plainTextToken;
 
         return response()->json([
             'message' => 'Perfil selecionado com sucesso!',
@@ -88,5 +91,46 @@ class AuthController extends Controller
             'user' => $user,
             'selected_role' => $selectedRolePivot,
         ]);
+    }
+    
+    /**
+     * O MÉTODO DE REGISTRO QUE JÁ ESTÁ CORRETO
+     */
+    public function register(Request $request)
+    {
+        $request->validate([
+            'token' => 'required|string',
+            'name' => 'required|string|max:100',
+            'cpf' => 'required|string|size:11|unique:users,cpf',
+            'password' => 'required|string|min:8|regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&].*$/',
+        ]);
+
+        $invitation = Invitation::where('token', $request->token)->first();
+        if (!$invitation || $invitation->status !== 'sent' || $invitation->expires_at < now()) {
+            return response()->json(['message' => 'Token de convite inválido ou expirado.'], 404);
+        }
+
+        // Busca os perfis que foram preparados para este convite
+        $rolesToAttach = $invitation->roles()->get();
+
+        // Cria o usuário
+        $user = User::create([
+            'name' => $request->name,
+            'email' => $invitation->email,
+            'cpf' => $invitation->cpf,
+            'password' => Hash::make($request->password),
+        ]);
+        
+        // Associa o usuário aos perfis e contextos definidos no convite
+        foreach($rolesToAttach as $role) {
+            $user->roles()->attach($role->id);
+        }
+
+        // Atualiza o status do convite para finalizado
+        $invitation->status = 'completed';
+        $invitation->registered_user_id = $user->id;
+        $invitation->save();
+
+        return response()->json(['message' => 'Usuário cadastrado com sucesso!'], 201);
     }
 }
