@@ -83,7 +83,11 @@ class AnswerController extends Controller
 
         // Se o utilizador logado for o docente que criou a avaliação, mostra todas as respostas
         if ($user->id === $evaluation->created_by_user_id) {
-            return $evaluation->answers()->with(['user', 'question'])->get();
+            // Carrega as respostas, incluindo a informação do utilizador (aluno) e da questão
+            $answers = $evaluation->answers()->with(['user', 'question'])->get();
+            
+            // Agrupa as respostas por utilizador para ser mais fácil de ler no frontend
+            return $answers->groupBy('user_id');
         }
 
         // Se o utilizador logado for um aluno, mostra apenas as suas respostas para esta avaliação

@@ -86,17 +86,25 @@ class EvaluationController extends Controller
     {
         $user = Auth::user();
 
-        // Lógica de Permissão
+        // Lógica de Permissão (a mesma de antes)
         $isCreator = $evaluation->created_by_user_id === $user->id;
         $isEnrolledStudent = $user->roles->contains('slug', 'student') &&
-                             $user->classes()->where('school_class_id', $evaluation->school_class_id)->exists();
+                            $user->classes()->where('school_class_id', $evaluation->school_class_id)->exists();
 
         if (!$isCreator && !$isEnrolledStudent) {
             return response()->json(['message' => 'Acesso não autorizado a esta avaliação.'], 403);
         }
 
-        // Carrega a avaliação com suas questões, e para cada questão, carrega suas opções
-        $evaluation->load('questions.options');
+        // --- A MUDANÇA ESTÁ AQUI ---
+        // Se o utilizador for um aluno, carregamos também as suas respostas.
+        if ($isEnrolledStudent) {
+            $evaluation->load(['questions.options', 'questions.answers' => function ($query) use ($user) {
+                $query->where('user_id', $user->id);
+            }]);
+        } else {
+            // Se for o docente, carregamos as perguntas e opções, mas não filtramos as respostas (ainda)
+            $evaluation->load('questions.options');
+        }
 
         return response()->json($evaluation);
     }

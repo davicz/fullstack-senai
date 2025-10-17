@@ -13,6 +13,7 @@ use App\Http\Controllers\Api\SchoolClassUserController;
 use App\Http\Controllers\Api\EvaluationController;
 use App\Http\Controllers\Api\QuestionController;
 use App\Http\Controllers\Api\AnswerController;
+use App\Http\Controllers\Api\UserClassAssociationController;
 
 // Rota de Login (Pública)
 Route::post('/login', [AuthController::class, 'login']);
@@ -58,4 +59,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/questions/{question}/answers', [AnswerController::class, 'store']);
     Route::put('/answers/{answer}', [AnswerController::class, 'update']);
     Route::get('/evaluations/{evaluation}/answers', [AnswerController::class, 'index']);
+
+    Route::get('/users/{user}/classes', [UserClassAssociationController::class, 'index']);
+    Route::put('/users/{user}/classes', [UserClassAssociationController::class, 'sync']);
 });

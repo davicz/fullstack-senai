@@ -18,44 +18,37 @@ class UserController extends Controller
      */
     public function index(Request $request)
     {
-        $loggedInUser = Auth::user();
+        $loggedInUser = Auth::user()->load('roles');
         $query = User::query();
 
-        // Admin Nacional vê tudo.
+        // Lógica de permissão hierárquica (já funcional)
         if ($loggedInUser->roles->contains('slug', 'national_admin')) {
-            // Nenhuma restrição é aplicada.
-        } 
-        // Admin Regional vê todos os usuários das UOs do seu DR.
-        else if ($loggedInUser->roles->contains('slug', 'regional_admin')) {
-            
-            // --- LÓGICA CORRIGIDA FINAL ---
-            // A "casa" do admin está na própria tabela users
-            $drId = $loggedInUser->regional_department_id;
-            
-            // Busca todos os usuários que pertencem ao mesmo DR
-            $query->where('regional_department_id', $drId);
-
-        }
-        // Admin de Unidade vê todos os usuários da sua UO.
-        else if ($loggedInUser->roles->contains('slug', 'unit_admin')) {
-            // A "casa" do admin está na própria tabela users
-            $uoId = $loggedInUser->operational_unit_id;
-            $query->where('operational_unit_id', $uoId);
-        }
-        else {
+            // Vê tudo
+        } else if ($loggedInUser->roles->contains('slug', 'regional_admin')) {
+            $query->where('regional_department_id', $loggedInUser->regional_department_id);
+        } else if ($loggedInUser->roles->contains('slug', 'unit_admin')) {
+            $query->where('operational_unit_id', $loggedInUser->operational_unit_id);
+        } else {
             return response()->json(['message' => 'Acesso não autorizado.'], 403);
         }
 
+        // --- NOVOS FILTROS AVANÇADOS ---
         if ($request->has('search')) {
             $searchTerm = $request->input('search');
-            $query->where(function($q) use ($searchTerm) {
-                $q->where('name', 'LIKE', "%{$searchTerm}%")
-                  ->orWhere('email', 'LIKE', "%{$searchTerm}%")
-                  ->orWhere('cpf', 'LIKE', "%{$searchTerm}%");
-            });
+            $query->where(fn($q) => $q->where('name', 'LIKE', "%{$searchTerm}%")->orWhere('email', 'LIKE', "%{$searchTerm}%")->orWhere('cpf', 'LIKE', "%{$searchTerm}%"));
         }
+        if ($request->has('regional_department_id')) {
+            $query->where('regional_department_id', $request->input('regional_department_id'));
+        }
+        if ($request->has('operational_unit_id')) {
+            $query->where('operational_unit_id', $request->input('operational_unit_id'));
+        }
+        if ($request->has('role_id')) {
+            $query->whereHas('roles', fn($q) => $q->where('role_id', $request->input('role_id')));
+        }
+        // O filtro de Status (ativo/inativo) pode ser adicionado aqui no futuro se a tabela 'users' tiver essa coluna.
 
-        $users = $query->orderBy('name', 'asc')->paginate(15);
+        $users = $query->with('roles')->orderBy('name', 'asc')->paginate(15);
 
         return response()->json($users);
     }
