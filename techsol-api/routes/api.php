@@ -10,6 +10,8 @@ use App\Http\Controllers\Api\OperationalUnitController;
 use App\Http\Controllers\Api\CourseController;
 use App\Http\Controllers\Api\SchoolClassController;
 use App\Http\Controllers\Api\SchoolClassUserController;
+use App\Http\Controllers\Api\EvaluationController;
+use App\Http\Controllers\Api\QuestionController;
 
 // Rota de Login (Pública)
 Route::post('/login', [AuthController::class, 'login']);
@@ -49,4 +51,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/classes/{schoolClass}/users', [SchoolClassUserController::class, 'store']);
     // Futuramente, podemos adicionar a rota de remoção:
     // Route::delete('/classes/{schoolClass}/users/{user}', [SchoolClassUserController::class, 'destroy']);
+
+    Route::apiResource('evaluations', EvaluationController::class);
+    Route::post('/evaluations/{evaluation}/questions', [QuestionController::class, 'store']);
 });

@@ -1,0 +1,33 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
+class Question extends Model
+{
+    use HasFactory;
+
+    protected $fillable = [
+        'evaluation_id',
+        'statement',
+        'type',
+    ];
+
+    /**
+     * Relação: Uma questão tem muitas opções.
+     */
+    public function options()
+    {
+        return $this->hasMany(Option::class);
+    }
+
+    /**
+     * Relação: Uma questão pertence a uma avaliação.
+     */
+    public function evaluation()
+    {
+        return $this->belongsTo(Evaluation::class);
+    }
+}
