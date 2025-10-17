@@ -5,7 +5,9 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Question;
 use Illuminate\Http\Request;
+use App\Models\Answer;
 use Illuminate\Support\Facades\Auth;
+use App\Models\Evaluation;
 
 class AnswerController extends Controller
 {
@@ -48,5 +50,47 @@ class AnswerController extends Controller
         );
 
         return response()->json($answer, 201);
+    }
+
+    public function update(Request $request, Answer $answer)
+    {
+        $user = Auth::user();
+
+        // 1. Validação de Permissão
+        // Apenas o docente que criou a avaliação pode atribuir notas.
+        // Carregamos a relação para aceder à avaliação a partir da resposta.
+        $evaluation = $answer->question->evaluation;
+        
+        if ($evaluation->created_by_user_id !== $user->id) {
+            return response()->json(['message' => 'Acesso não autorizado. Apenas o criador da avaliação pode atribuir notas.'], 403);
+        }
+
+        // 2. Validação dos Dados
+        $validatedData = $request->validate([
+            'score' => 'required|numeric|min:0|max:100', // Exemplo: nota de 0 a 100
+        ]);
+
+        // 3. Atualiza a Resposta
+        $answer->score = $validatedData['score'];
+        $answer->save();
+
+        return response()->json($answer);
+    }
+
+    public function index(Evaluation $evaluation)
+    {
+        $user = Auth::user();
+
+        // Se o utilizador logado for o docente que criou a avaliação, mostra todas as respostas
+        if ($user->id === $evaluation->created_by_user_id) {
+            return $evaluation->answers()->with(['user', 'question'])->get();
+        }
+
+        // Se o utilizador logado for um aluno, mostra apenas as suas respostas para esta avaliação
+        if ($user->roles->contains('slug', 'student')) {
+            return $evaluation->answers()->where('user_id', $user->id)->with(['user', 'question'])->get();
+        }
+
+        return response()->json(['message' => 'Acesso não autorizado.'], 403);
     }
 }

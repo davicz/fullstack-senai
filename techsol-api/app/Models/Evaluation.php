@@ -33,4 +33,12 @@ class Evaluation extends Model
     {
         return $this->belongsTo(SchoolClass::class);
     }
+
+    /**
+     * Relação: Uma avaliação tem muitas respostas ATRAVÉS de suas questões.
+     */
+    public function answers()
+    {
+        return $this->hasManyThrough(Answer::class, Question::class);
+    }
 }

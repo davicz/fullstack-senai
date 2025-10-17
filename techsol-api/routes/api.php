@@ -56,4 +56,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('evaluations', EvaluationController::class);
     Route::post('/evaluations/{evaluation}/questions', [QuestionController::class, 'store']);
     Route::post('/questions/{question}/answers', [AnswerController::class, 'store']);
+    Route::put('/answers/{answer}', [AnswerController::class, 'update']);
+    Route::get('/evaluations/{evaluation}/answers', [AnswerController::class, 'index']);
 });

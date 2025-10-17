@@ -15,6 +15,10 @@ class Question extends Model
         'type',
     ];
 
+    protected $casts = [
+        'options' => 'array',
+    ];
+
     /**
      * Relação: Uma questão tem muitas opções.
      */
