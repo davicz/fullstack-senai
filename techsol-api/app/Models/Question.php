@@ -30,4 +30,12 @@ class Question extends Model
     {
         return $this->belongsTo(Evaluation::class);
     }
+
+    /**
+     * Relação: Uma questão tem muitas respostas (uma por aluno).
+     */
+    public function answers()
+    {
+        return $this->hasMany(Answer::class);
+    }
 }

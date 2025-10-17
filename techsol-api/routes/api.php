@@ -12,6 +12,7 @@ use App\Http\Controllers\Api\SchoolClassController;
 use App\Http\Controllers\Api\SchoolClassUserController;
 use App\Http\Controllers\Api\EvaluationController;
 use App\Http\Controllers\Api\QuestionController;
+use App\Http\Controllers\Api\AnswerController;
 
 // Rota de Login (Pública)
 Route::post('/login', [AuthController::class, 'login']);
@@ -54,4 +55,5 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::apiResource('evaluations', EvaluationController::class);
     Route::post('/evaluations/{evaluation}/questions', [QuestionController::class, 'store']);
+    Route::post('/questions/{question}/answers', [AnswerController::class, 'store']);
 });
