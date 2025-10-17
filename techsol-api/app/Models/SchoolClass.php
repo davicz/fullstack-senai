@@ -42,4 +42,9 @@ class SchoolClass extends Model
     {
         return $this->belongsTo(OperationalUnit::class);
     }
+
+    public function users()
+    {
+    return $this->belongsToMany(User::class, 'class_user');
+    }
 }

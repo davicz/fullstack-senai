@@ -76,4 +76,9 @@ class User extends Authenticatable
     {
         return $this->belongsTo(OperationalUnit::class);
     }
+    
+    public function classes()
+    {
+    return $this->belongsToMany(SchoolClass::class, 'class_user');
+    }
 }

@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\RegionalDepartmentController;
 use App\Http\Controllers\Api\OperationalUnitController; 
 use App\Http\Controllers\Api\CourseController;
 use App\Http\Controllers\Api\SchoolClassController;
+use App\Http\Controllers\Api\SchoolClassUserController;
 
 // Rota de Login (Pública)
 Route::post('/login', [AuthController::class, 'login']);
@@ -43,4 +44,9 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::apiResource('courses', CourseController::class);
     Route::apiResource('classes', SchoolClassController::class);
+
+    // NOVAS ROTAS PARA GERIR MATRÍCULAS
+    Route::post('/classes/{schoolClass}/users', [SchoolClassUserController::class, 'store']);
+    // Futuramente, podemos adicionar a rota de remoção:
+    // Route::delete('/classes/{schoolClass}/users/{user}', [SchoolClassUserController::class, 'destroy']);
 });
