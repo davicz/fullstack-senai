@@ -13,22 +13,36 @@ class EvaluationController extends Controller
      * Lista as avaliações com base nas permissões do utilizador.
      */
     public function index()
-    {
-        $user = Auth::user();
+        {
+            $user = Auth::user();
 
-        // Lógica de permissão (exemplo): Apenas Admins veem tudo, Docentes veem as suas.
-        if ($user->roles->contains(fn($role) => str_contains($role->slug, 'admin'))) {
-            return Evaluation::with('schoolClass')->get();
+            // Admin vê tudo
+            if ($user->roles->contains(fn($role) => str_contains($role->slug, 'admin'))) {
+                return Evaluation::with('schoolClass.course')->orderBy('created_at', 'desc')->get();
+            }
+
+            // Docente vê as avaliações que criou
+            if ($user->roles->contains('slug', 'teacher')) {
+                return Evaluation::where('created_by_user_id', $user->id)
+                    ->with('schoolClass.course')
+                    ->orderBy('created_at', 'desc')
+                    ->get();
+            }
+
+            // Aluno vê as avaliações das turmas em que está matriculado
+            if ($user->roles->contains('slug', 'student')) {
+                // 1. Pega os IDs de todas as turmas em que o aluno está
+                $classIds = $user->classes()->pluck('school_class_id');
+
+                // 2. Busca todas as avaliações que pertencem a essas turmas
+                return Evaluation::whereIn('school_class_id', $classIds)
+                    ->with('schoolClass.course')
+                    ->orderBy('created_at', 'desc')
+                    ->get();
+            }
+
+            return response()->json(['message' => 'Acesso não autorizado.'], 403);
         }
-
-        if ($user->roles->contains('slug', 'teacher')) {
-            return Evaluation::where('created_by_user_id', $user->id)
-                ->with('schoolClass')
-                ->get();
-        }
-
-        return response()->json(['message' => 'Acesso não autorizado.'], 403);
-    }
 
     /**
      * Cria uma nova avaliação.
@@ -66,5 +80,24 @@ class EvaluationController extends Controller
         ]);
 
         return response()->json($evaluation, 201);
+    }
+
+    public function show(Evaluation $evaluation)
+    {
+        $user = Auth::user();
+
+        // Lógica de Permissão
+        $isCreator = $evaluation->created_by_user_id === $user->id;
+        $isEnrolledStudent = $user->roles->contains('slug', 'student') &&
+                             $user->classes()->where('school_class_id', $evaluation->school_class_id)->exists();
+
+        if (!$isCreator && !$isEnrolledStudent) {
+            return response()->json(['message' => 'Acesso não autorizado a esta avaliação.'], 403);
+        }
+
+        // Carrega a avaliação com suas questões, e para cada questão, carrega suas opções
+        $evaluation->load('questions.options');
+
+        return response()->json($evaluation);
     }
 }
