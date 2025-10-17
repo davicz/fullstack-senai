@@ -17,6 +17,8 @@ Route::post('/register', [AuthController::class, 'register']);
 // Agrupando rotas que precisam de autenticação
 Route::middleware('auth:sanctum')->group(function () {
 
+    Route::post('/login/profile', [AuthController::class, 'selectProfile']);
+
     // Rota para convidar colaboradores
     Route::post('/invites', [InviteController::class, 'store']);
 

@@ -26,6 +26,8 @@ class User extends Authenticatable
         'operational_unit_id',    // <-- GARANTE QUE ESTE CAMPO SEJA SALVO
     ];
 
+    protected $with = ['roles'];
+
     /**
      * The attributes that should be hidden for serialization.
      *
@@ -52,9 +54,11 @@ class User extends Authenticatable
     /**
      * Relação: Um usuário pertence a um Perfil (Role).
      */
-    public function role()
+    public function roles()
     {
-        return $this->belongsTo(Role::class);
+    return $this->belongsToMany(Role::class, 'user_role')
+                ->withPivot('regional_department_id', 'operational_unit_id')
+                ->withTimestamps();
     }
 
     /**

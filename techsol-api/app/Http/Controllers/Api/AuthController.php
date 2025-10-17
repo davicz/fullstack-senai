@@ -6,93 +6,87 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\Role;
-use App\Models\Invitation;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
-use Illuminate\Support\Facades\Auth; // <-- A LINHA QUE FALTAVA
+use Illuminate\Support\Facades\Auth;
 
 class AuthController extends Controller
 {
     /**
-     * O NOVO MÉTODO DE LOGIN UNIFICADO (aceita CPF ou E-mail)
+     * ETAPA 1: Autentica o usuário e retorna os perfis disponíveis ou um token final.
      */
     public function login(Request $request)
     {
-        // 1. Valida a requisição para um campo genérico "login" e a senha
         $request->validate([
             'login' => 'required|string',
             'password' => 'required|string',
         ]);
 
-        // 2. Descobre se o campo "login" é um e-mail ou outra coisa (CPF)
         $loginField = filter_var($request->login, FILTER_VALIDATE_EMAIL) ? 'email' : 'cpf';
 
-        // 3. Monta as credenciais para a tentativa de login
         $credentials = [
             $loginField => $request->login,
             'password' => $request->password
         ];
 
-        // 4. Tenta autenticar usando a ferramenta Auth
         if (! Auth::attempt($credentials)) {
             throw ValidationException::withMessages([
                 'login' => ['As credenciais fornecidas estão incorretas.'],
             ]);
         }
 
-        // 5. Se deu certo, pega o usuário e cria o token
+        // A LINHA DO ERRO FOI REMOVIDA DAQUI. O Auth::user() JÁ CARREGA OS PERFIS.
         $user = Auth::user();
-        $token = $user->createToken('auth-token')->plainTextToken;
+
+        // Se o usuário só tem um perfil, loga direto.
+        if ($user->roles->count() === 1) {
+            $role = $user->roles->first();
+            $token = $user->createToken('auth-token', ['user_role_id:' . $role->pivot->id])->plainTextToken;
+
+            return response()->json([
+                'message' => 'Login bem-sucedido!',
+                'access_token' => $token,
+                'user' => $user,
+                'selected_role' => $role,
+            ]);
+        }
+        
+        // Se tem múltiplos perfis, cria um token temporário só para a seleção.
+        $temporaryToken = $user->createToken('temporary-token', ['select-profile'], now()->addMinutes(5))->plainTextToken;
 
         return response()->json([
-            'message' => 'Login bem-sucedido!',
-            'access_token' => $token,
-            'token_type' => 'Bearer',
+            'message' => 'Múltiplos perfis encontrados. Por favor, selecione um.',
+            'temporary_token' => $temporaryToken,
             'user' => $user,
         ]);
     }
 
     /**
-     * O MÉTODO DE REGISTRO QUE JÁ EXISTE E ESTÁ FUNCIONANDO
+     * ETAPA 2: Gera o token final baseado no perfil escolhido.
      */
-    public function register(Request $request)
-{
-    // A validação dos dados do formulário permanece a mesma
-    $request->validate([
-        'token' => 'required|string',
-        'name' => 'required|string|max:100',
-        'cpf' => 'required|string|size:11|unique:users,cpf',
-        'password' => 'required|string|min:8|regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&].*$/',
-    ]);
+    public function selectProfile(Request $request)
+    {
+        $user = $request->user();
 
-    // A validação do token permanece a mesma
-    $invitation = Invitation::where('token', $request->token)->first();
-    if (!$invitation || $invitation->status !== 'pending' || $invitation->expires_at < now()) {
-        return response()->json(['message' => 'Token de convite inválido ou expirado.'], 404);
-    }
+        $validated = $request->validate([
+            'user_role_id' => 'required|integer',
+        ]);
 
-    // Define o perfil padrão para o novo usuário (ex: Aluno)
-    $defaultRole = Role::where('slug', 'student')->first();
+        $selectedRolePivot = $user->roles()->wherePivot('id', $validated['user_role_id'])->first();
 
-    // Cria o novo usuário
-    $user = User::create([
-        'name' => $request->name,
-        'email' => $invitation->email,
-        'cpf' => $request->cpf,
-        'password' => Hash::make($request->password),
-        'role_id' => $defaultRole->id,
+        if (!$selectedRolePivot) {
+            return response()->json(['message' => 'Perfil inválido ou não pertence a este usuário.'], 403);
+        }
         
-        // A MUDANÇA CRÍTICA ESTÁ AQUI:
-        // Copiamos os IDs da organização a partir do registro do convite
-        'operational_unit_id' => $invitation->operational_unit_id,
-        'regional_department_id' => $invitation->regional_department_id,
-    ]);
+        $user->tokens()->delete();
 
-    // Atualiza o status do convite
-    $invitation->status = 'completed';
-    $invitation->registered_user_id = $user->id;
-    $invitation->save();
+        $finalToken = $user->createToken('auth-token', ['role_id:' . $selectedRolePivot->pivot->id])->plainTextToken;
 
-    return response()->json(['message' => 'Usuário cadastrado com sucesso!'], 201);
-}
+        return response()->json([
+            'message' => 'Perfil selecionado com sucesso!',
+            'access_token' => $finalToken,
+            'user' => $user,
+            'selected_role' => $selectedRolePivot,
+        ]);
+    }
 }

@@ -12,10 +12,12 @@ class RoleSeeder extends Seeder
      */
     public function run(): void
     {
-        Role::create(['name' => 'Admin Nacional', 'slug' => 'national_admin']);
-        Role::create(['name' => 'Admin Regional', 'slug' => 'regional_admin']);
-        Role::create(['name' => 'Admin de Unidade', 'slug' => 'unit_admin']);
-        Role::create(['name' => 'Docente', 'slug' => 'teacher']);
-        Role::create(['name' => 'Aluno', 'slug' => 'student']);
+        Role::query()->delete(); // Limpa a tabela antes de popular
+
+        Role::create(['name' => 'Administrador Senai', 'slug' => 'national_admin']);     // [cite: 29]
+        Role::create(['name' => 'Administrador Regional', 'slug' => 'regional_admin']); // [cite: 32]
+        Role::create(['name' => 'Administrador Escola', 'slug' => 'school_admin']);     // [cite: 37]
+        Role::create(['name' => 'Docente', 'slug' => 'teacher']);                        // [cite: 39]
+        Role::create(['name' => 'Aluno', 'slug' => 'student']);                          // [cite: 42]
     }
 }
