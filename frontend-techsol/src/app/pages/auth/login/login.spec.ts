@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-
 import { Login } from './login';
+import { HttpClientTestingModule } from '@angular/common/http/testing'; // Importe o Módulo de Teste HTTP
+import { RouterTestingModule } from '@angular/router/testing'; // Importe o Módulo de Teste de Rota
 
 describe('Login', () => {
   let component: Login;
@@ -8,7 +9,11 @@ describe('Login', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [Login]
+      imports: [
+        Login,
+        HttpClientTestingModule, // Adicione aqui
+        RouterTestingModule     // Adicione aqui
+      ]
     })
     .compileComponents();
 

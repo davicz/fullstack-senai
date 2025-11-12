@@ -1,6 +1,6 @@
 import { Routes } from '@angular/router';
 import { AuthLayoutComponent } from './layouts/auth/auth';
-import { LoginComponent } from './pages/auth/login/login';
+import { Login } from './pages/auth/login/login';
 import { ProfileSelector } from './pages/auth/profile-selector/profile-selector';
 import { AppLayoutComponent } from './layouts/app/app';
 import { Invites } from './pages/app/invites/invites';
@@ -11,7 +11,7 @@ export const routes: Routes = [
     path: 'auth',
     component: AuthLayoutComponent,
     children: [
-      { path: 'login', component: LoginComponent },
+      { path: 'login', component: Login },
       { path: 'select-profile', component: ProfileSelector },
       { path: '', redirectTo: 'login', pathMatch: 'full' }
     ]
