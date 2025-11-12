@@ -1,15 +1,15 @@
-import { Injectable, Inject, PLATFORM_ID } from '@angular/core'; // Importações adicionadas
-import { isPlatformBrowser } from '@angular/common'; // Importação adicionada
+import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable, BehaviorSubject, tap } from 'rxjs';
+import { Observable, BehaviorSubject, tap, throwError } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { Router } from '@angular/router';
 
 @Injectable({
   providedIn: 'root'
 })
 export class Auth {
-  // ATENÇÃO: Verifique a porta da sua API.
-  private apiUrl = 'http://localhost/api'; 
+  private apiUrl = 'http://localhost/api';
 
   private currentUserSubject = new BehaviorSubject<any>(null);
   public currentUser = this.currentUserSubject.asObservable();
@@ -20,19 +20,15 @@ export class Auth {
   constructor(
     private http: HttpClient,
     private router: Router,
-    @Inject(PLATFORM_ID) private platformId: Object // Injeta o PLATFORM_ID
+    @Inject(PLATFORM_ID) private platformId: Object
   ) {
-    // Tenta carregar o usuário APENAS se estivermos no NAVEGADOR
     if (isPlatformBrowser(this.platformId)) {
       const user = localStorage.getItem('siac_user');
-      if (user) {
-        this.currentUserSubject.next(JSON.parse(user));
-      }
+      if (user) this.currentUserSubject.next(JSON.parse(user));
     }
   }
 
-  // --- MÉTODOS PRINCIPAIS ---
-  // (O restante dos métodos de login e selectProfile permanecem os mesmos)
+  // --- LOGIN ---
   login(credentials: { login: string, password: string }): Observable<any> {
     return this.http.post<any>(`${this.apiUrl}/login`, credentials).pipe(
       tap(response => {
@@ -47,36 +43,44 @@ export class Auth {
     );
   }
 
+  // --- SELEÇÃO DE PERFIL ---
   selectProfile(userRoleId: number): Observable<any> {
     const token = this.getTempToken();
+
     if (!token) {
       this.router.navigate(['/auth/login']);
-      return new Observable();
+      return throwError(() => new Error('Token temporário ausente'));
     }
+
     const headers = new HttpHeaders({
       'Authorization': `Bearer ${token}`,
       'Accept': 'application/json'
     });
+
     return this.http.post<any>(`${this.apiUrl}/login/profile`, { user_role_id: userRoleId }, { headers }).pipe(
       tap(response => {
         this.storeFinalAuth(response);
         this.router.navigate(['/app/dashboard']);
+      }),
+      catchError(err => {
+        console.error('Erro ao selecionar perfil:', err);
+        return throwError(() => err);
       })
     );
   }
 
+  // --- LOGOUT ---
   logout() {
-    // Adiciona a verificação de plataforma em todos os lugares que usam localStorage
     if (isPlatformBrowser(this.platformId)) {
       localStorage.removeItem('siac_token');
+      localStorage.removeItem('siac_temp_token');
       localStorage.removeItem('siac_user');
     }
     this.currentUserSubject.next(null);
     this.router.navigate(['/auth/login']);
   }
 
-  // --- MÉTODOS DE ARMAZENAMENTO (Privados) ---
-
+  // --- ARMAZENAMENTO ---
   private storeFinalAuth(response: any) {
     if (isPlatformBrowser(this.platformId)) {
       localStorage.setItem('siac_token', response.access_token);
@@ -95,19 +99,16 @@ export class Auth {
     this.currentUserSubject.next(response.user);
   }
 
-  // --- MÉTODOS DE LEITURA (Públicos) ---
-
+  // --- GETTERS ---
   public getFinalToken(): string | null {
-    if (isPlatformBrowser(this.platformId)) {
-      return localStorage.getItem('siac_token');
-    }
-    return null;
+    return isPlatformBrowser(this.platformId)
+      ? localStorage.getItem('siac_token')
+      : null;
   }
 
   public getTempToken(): string | null {
-    if (isPlatformBrowser(this.platformId)) {
-      return localStorage.getItem('siac_temp_token');
-    }
-    return null;
+    return isPlatformBrowser(this.platformId)
+      ? localStorage.getItem('siac_temp_token')
+      : null;
   }
 }

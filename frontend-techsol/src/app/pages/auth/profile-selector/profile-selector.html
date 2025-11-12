@@ -1,16 +1,18 @@
 <div class="container mx-auto max-w-6xl px-4 py-12 text-white">
-
   <div class="mb-8 max-w-lg">
-    <h1 class="text-3xl font-light">Bem vindo(a), Usuário(a)</h1>
+    <h1 class="text-3xl font-light">Bem vindo(a), {{ user?.name }}</h1>
     <h2 class="text-4xl font-bold">Selecione o perfil que deseja acessar</h2>
   </div>
 
-  <div class="grid grid-cols-1 gap-8 md:grid-cols-3">
+  <div *ngIf="errorMessage" class="mb-4 p-3 rounded-md bg-red-800 text-red-100 text-sm">
+    {{ errorMessage }}
+  </div>
 
+  <div class="grid grid-cols-1 gap-8 md:grid-cols-3">
     <div class="space-y-4 md:col-span-1">
       <button 
         *ngFor="let profile of profiles"
-        (click)="selectProfile(profile.name)"
+        (click)="selectProfile(profile)"
         [class.bg-white]="selectedProfileName === profile.name"
         [class.text-blue-700]="selectedProfileName === profile.name"
         [class.border-transparent]="selectedProfileName === profile.name"
@@ -18,57 +20,79 @@
         class="w-full rounded-lg border p-4 text-left transition-all hover:bg-white/90 hover:text-blue-700"
         >
         <h3 class="text-lg font-semibold">{{ profile.name }}</h3>
-        <p 
-          [class.text-gray-600]="selectedProfileName === profile.name"
-          [class.text-white/80]="selectedProfileName !== profile.name"
-          class="text-sm">
-          O SIAC mudou! Agora para entrar no sistema, é necessário que...
+        
+        <!-- Exibição corrigida: reconhece Regional e Escola corretamente -->
+        <p *ngIf="profile.pivot?.operational_unit_id != null"
+           [class.text-gray-600]="selectedProfileName === profile.name"
+           [class.text-white/80]="selectedProfileName !== profile.name"
+           class="text-sm">
+           Escola ID: {{ profile.pivot?.operational_unit_id ?? '—' }}
+        </p>
+
+        <p *ngIf="profile.pivot?.operational_unit_id == null && profile.pivot?.regional_department_id != null"
+           [class.text-gray-600]="selectedProfileName === profile.name"
+           [class.text-white/80]="selectedProfileName !== profile.name"
+           class="text-sm">
+           Regional ID: {{ profile.pivot?.regional_department_id ?? '—' }}
+        </p>
+
+        <p *ngIf="profile.pivot?.operational_unit_id == null && profile.pivot?.regional_department_id == null"
+           [class.text-gray-600]="selectedProfileName === profile.name"
+           [class.text-white/80]="selectedProfileName !== profile.name"
+           class="text-sm">
+           (Acesso Nacional)
         </p>
       </button>
+
+      <p *ngIf="profiles.length === 0 && !isLoading" class="text-gray-500">
+        Nenhum perfil de acesso foi configurado para este usuário.
+      </p>
     </div>
 
     <div class="rounded-lg bg-white/10 p-6 md:col-span-2">
-
-      <ng-container *ngIf="selectedProfileName === 'Administrador Senai'">
-        <h3 class="mb-4 text-2xl font-bold">{{ selectedProfileName }}</h3>
+      <div *ngIf="selectedProfile; else noSelection">
+        <h3 class="mb-4 text-2xl font-bold">{{ selectedProfile.name }}</h3>
         <p class="mb-6 text-lg">
-          O SIAC mudou! Agora para entrar no sistema, é necessário que o
-          usuário escolha a área que deseja acessar. Desta forma, é possível
-          simplificar a experiência do uso do sistema, possibilitando uma
-          visão personalizada para cada contexto.
+          O SIAC mudou! Ao selecionar este perfil, você terá uma visão personalizada para este contexto.
         </p>
-
-        <div class="border-t border-white/20 pt-6">
+        
+        <div *ngIf="permissions[selectedProfile.name]; else descriptionSoon" class="border-t border-white/20 pt-6">
           <h4 class="mb-4 text-xl font-semibold">
-            Ao escolher a área "Administrador SENAI" você conseguirá:
+            Ao escolher esta área você conseguirá:
           </h4>
           <ul class="space-y-3">
-            <li *ngFor="let perm of permissions['Administrador Senai']" class="flex items-center gap-3">
+            <li *ngFor="let perm of permissions[selectedProfile.name]" class="flex items-center gap-3">
               <span class="flex h-5 w-5 items-center justify-center rounded-full bg-white text-blue-700">✓</span>
               <span>{{ perm }}</span>
             </li>
           </ul>
         </div>
-      </ng-container>
 
-      <ng-container *ngIf="selectedProfileName !== 'Administrador Senai'">
-         <h3 class="mb-4 text-2xl font-bold">{{ selectedProfileName }}</h3>
-         <p>Descrição para este perfil...</p>
-      </ng-container>
+        <ng-template #descriptionSoon>
+          <p>Descrição para este perfil em breve...</p>
+        </ng-template>
+      </div>
 
+      <ng-template #noSelection>
+        <p>Selecione um perfil à esquerda para ver mais detalhes.</p>
+      </ng-template>
     </div>
   </div>
 
   <div class="mt-12 flex items-center justify-between border-t border-white/20 pt-6">
-    <button class="rounded-lg px-5 py-3 font-semibold hover:bg-white/10">
-      Voltar para o início
+    <button (click)="logout()" class="rounded-lg px-5 py-3 font-semibold hover:bg-white/10">
+      Voltar (Logout)
     </button>
     <button 
       (click)="navigateToApp()"
-      class="rounded-lg bg-white px-8 py-4 text-lg font-bold text-blue-700 shadow-lg hover:bg-gray-100"
+      [disabled]="isLoading || !selectedProfile"
+      class="rounded-lg bg-white px-8 py-4 text-lg font-bold text-blue-700 shadow-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3"
     >
-      Acessar a plataforma
+      <svg *ngIf="isLoading" class="animate-spin h-5 w-5 text-blue-700" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+      </svg>
+      <span *ngIf="!isLoading">Acessar a plataforma</span>
     </button>
   </div>
-
 </div>

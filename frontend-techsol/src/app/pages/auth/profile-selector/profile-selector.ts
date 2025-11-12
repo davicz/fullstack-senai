@@ -1,44 +1,131 @@
-import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { Component, Inject, PLATFORM_ID, OnInit } from '@angular/core';
+import { isPlatformBrowser, CommonModule } from '@angular/common';
+import { Router, RouterModule } from '@angular/router';
+import { Auth } from '../../../services/auth';
+
+interface RolePivot {
+  user_id: number;
+  role_id: number;
+  id?: number;
+  regional_department_id: number | null;
+  operational_unit_id: number | null;
+}
+
+interface Role {
+  id: number;
+  name: string;
+  slug: string;
+  pivot?: RolePivot;
+}
 
 @Component({
   selector: 'app-profile-selector',
-  imports: [CommonModule],
+  standalone: true,
+  imports: [CommonModule, RouterModule],
   templateUrl: './profile-selector.html',
-  styleUrl: './profile-selector.css',
+  styleUrls: ['./profile-selector.css'],
 })
-export class ProfileSelector {
-  
-  profiles = [
-    { id: 1, name: 'Administrador Senai' },
-    { id: 2, name: 'Administrador Regional' },
-    { id: 3, name: 'Administrador Escola' },
-    { id: 4, name: 'Docente' },
-    { id: 5, name: 'Aluno' },
-  ];
+export class ProfileSelector implements OnInit {
 
-  selectedProfileName = 'Administrador Senai';
+  user: any = null;
+  profiles: Role[] = [];
+  selectedProfile: Role | null = null;
+  selectedProfileName = '';
+  isLoading = false;
+  errorMessage: string | null = null;
 
-  permissions = {
+  permissions: { [key: string]: string[] } = {
     'Administrador Senai': [
       'Visualizar dados de todo Brasil',
       'Criar novas escolas',
       'Adicionar novos administradores'
     ],
+    'Administrador Regional': [
+      'Gerenciar escolas e docentes do estado',
+      'Agendar avaliações das escolas',
+      'Exportar dados'
+    ],
+    'Administrador Escola': [
+      'Adicionar docentes',
+      'Gerenciar turmas',
+      'Acompanhar desempenhos'
+    ],
+    'Docente': [
+      'Agendar e aplicar avaliações',
+      'Identificar capacidades a revisar',
+      'Comparar rendimento'
+    ],
+    'Aluno': [
+      'Responder avaliações',
+      'Revisar desempenho',
+      'Consultar avaliações anteriores'
+    ],
   };
 
-  constructor(private router: Router) {}
+  constructor(
+    private router: Router,
+    private auth: Auth,
+    @Inject(PLATFORM_ID) private platformId: Object
+  ) {}
 
-  selectProfile(profileName: string) {
-    this.selectedProfileName = profileName;
-    // No futuro: this.apiService.selectProfile(profile.id)
+  ngOnInit(): void {
+    // Garante que só roda no browser
+    if (isPlatformBrowser(this.platformId)) {
+      const storedUser = localStorage.getItem('siac_user');
+
+      if (!storedUser) {
+        this.auth.logout();
+        return;
+      }
+
+      try {
+        const userData = JSON.parse(storedUser);
+        if (userData && userData.roles) {
+          this.user = userData;
+          this.profiles = userData.roles;
+
+          if (this.profiles.length > 0) {
+            // seleciona o primeiro perfil automaticamente
+            this.selectProfile(this.profiles[0]);
+          }
+        } else {
+          this.errorMessage = 'Usuário inválido ou sem perfis atribuídos.';
+        }
+      } catch (err) {
+        console.error('Erro ao ler siac_user do localStorage:', err);
+        this.auth.logout();
+      }
+    }
+  }
+
+  selectProfile(profile: Role) {
+    this.selectedProfile = profile;
+    this.selectedProfileName = profile.name;
+    this.errorMessage = null;
   }
 
   navigateToApp() {
-    // Simula a seleção de perfil (POST /api/login/profile)
-    // e redireciona para a página principal do app
-    this.router.navigate(['/app/dashboard']);
+    if (!this.selectedProfile) return;
+
+    this.isLoading = true;
+    this.errorMessage = null;
+
+    const roleIdToSend = this.selectedProfile.id;
+
+    this.auth.selectProfile(roleIdToSend).subscribe({
+      next: () => {
+        this.isLoading = false;
+        // O Auth já redireciona para /app/dashboard
+      },
+      error: (err) => {
+        console.error('Erro ao selecionar perfil:', err);
+        this.errorMessage = 'Não foi possível selecionar o perfil. Tente novamente.';
+        this.isLoading = false;
+      }
+    });
   }
 
+  logout(): void {
+    this.auth.logout();
+  }
 }

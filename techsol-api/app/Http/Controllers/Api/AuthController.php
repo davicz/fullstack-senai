@@ -18,7 +18,6 @@ class AuthController extends Controller
      */
     public function login(Request $request)
     {
-        // --- ESTE BLOCO ESTAVA FALTANDO ---
         $request->validate([
             'login' => 'required|string',
             'password' => 'required|string',
@@ -30,7 +29,6 @@ class AuthController extends Controller
             $loginField => $request->login,
             'password' => $request->password
         ];
-        // --- FIM DO BLOCO QUE FALTAVA ---
 
         if (! Auth::attempt($credentials)) {
             throw ValidationException::withMessages([
@@ -55,7 +53,8 @@ class AuthController extends Controller
             ]);
         }
         
-        $temporaryToken = $user->createToken('temporary-token', [], now()->addMinutes(5))->plainTextToken;
+        // Cria token temporário (sem tentar passar expires_at — Sanctum não aceita esse parâmetro aqui)
+        $temporaryToken = $user->createToken('temporary-token')->plainTextToken;
 
         return response()->json([
             'message' => 'Múltiplos perfis encontrados. Por favor, selecione um.',
@@ -75,14 +74,17 @@ class AuthController extends Controller
             'user_role_id' => 'required|integer',
         ]);
 
-        $selectedRolePivot = $user->roles()->wherePivot('id', $validated['user_role_id'])->first();
+        // A tabela user_role não possui id, portanto buscamos pela role_id
+        $selectedRolePivot = $user->roles()->where('role_id', $validated['user_role_id'])->first();
 
         if (!$selectedRolePivot) {
             return response()->json(['message' => 'Perfil inválido ou não pertence a este usuário.'], 403);
         }
         
-        $user->tokens()->delete();
+        // Remove tokens temporários
+        $user->tokens()->where('name', 'temporary-token')->delete();
 
+        // Gera token final
         $finalToken = $user->createToken('auth-token')->plainTextToken;
 
         return response()->json([
@@ -94,7 +96,7 @@ class AuthController extends Controller
     }
     
     /**
-     * O MÉTODO DE REGISTRO QUE JÁ ESTÁ CORRETO
+     * O MÉTODO DE REGISTRO QUE JÁ ESTAVA CORRETO
      */
     public function register(Request $request)
     {
