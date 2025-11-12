@@ -9,7 +9,7 @@ import { Router } from '@angular/router';
   providedIn: 'root'
 })
 export class Auth {
-  private apiUrl = 'http://localhost/api';
+  private apiUrl = 'http://localhost/api'; // Verifique sua porta
 
   private currentUserSubject = new BehaviorSubject<any>(null);
   public currentUser = this.currentUserSubject.asObservable();
@@ -46,21 +46,17 @@ export class Auth {
   // --- SELEÇÃO DE PERFIL ---
   selectProfile(userRoleId: number): Observable<any> {
     const token = this.getTempToken();
-
     if (!token) {
       this.router.navigate(['/auth/login']);
       return throwError(() => new Error('Token temporário ausente'));
     }
-
     const headers = new HttpHeaders({
-      'Authorization': `Bearer ${token}`,
-      'Accept': 'application/json'
+      'Authorization': `Bearer ${token}`, 'Accept': 'application/json'
     });
-
     return this.http.post<any>(`${this.apiUrl}/login/profile`, { user_role_id: userRoleId }, { headers }).pipe(
       tap(response => {
         this.storeFinalAuth(response);
-        this.router.navigate(['/app/dashboard']);
+        this.router.navigate(['/app/dashboard'], { replaceUrl: true });
       }),
       catchError(err => {
         console.error('Erro ao selecionar perfil:', err);
@@ -69,7 +65,7 @@ export class Auth {
     );
   }
 
-  // --- LOGOUT ---
+  // --- LOGOUT COMPLETO ---
   logout() {
     if (isPlatformBrowser(this.platformId)) {
       localStorage.removeItem('siac_token');
@@ -80,11 +76,34 @@ export class Auth {
     this.router.navigate(['/auth/login']);
   }
 
+  // --- LOGOUT SUAVE (TROCAR PERFIL) ---
+  logoutToProfileSelection() {
+    if (isPlatformBrowser(this.platformId)) {
+      const currentFinalToken = localStorage.getItem('siac_token');
+
+      // Se o usuário já tem um token final (login normal)
+      if (currentFinalToken) {
+        // Reaproveita o token final como temporário
+        localStorage.setItem('siac_temp_token', currentFinalToken);
+      }
+
+      // Remove o token final para forçar nova seleção de perfil
+      localStorage.removeItem('siac_token');
+    }
+
+    // Mantém os dados do usuário (siac_user)
+    this.currentUserSubject.next(null);
+
+    // Volta para a tela de seleção de perfil
+    this.router.navigate(['/auth/select-profile']);
+  }
+
   // --- ARMAZENAMENTO ---
   private storeFinalAuth(response: any) {
     if (isPlatformBrowser(this.platformId)) {
       localStorage.setItem('siac_token', response.access_token);
       localStorage.setItem('siac_user', JSON.stringify(response.user));
+      // APAGA O TOKEN TEMPORÁRIO AQUI, pois ele já foi usado
       localStorage.removeItem('siac_temp_token');
     }
     this.currentUserSubject.next(response.user);

@@ -5,9 +5,11 @@ import { ProfileSelector } from './pages/auth/profile-selector/profile-selector'
 import { AppLayoutComponent } from './layouts/app/app';
 import { Invites } from './pages/app/invites/invites';
 import { Panel } from './pages/app/panel/panel';
+import { Users } from './pages/app/users/users';
+import { authGuard } from './services/auth-guard';
 
 export const routes: Routes = [
-    {
+  {
     path: 'auth',
     component: AuthLayoutComponent,
     children: [
@@ -19,16 +21,17 @@ export const routes: Routes = [
   {
     path: 'app',
     component: AppLayoutComponent,
+    canActivate: [authGuard],
     children: [
       { path: 'invites', component: Invites },
-      // (No futuro: /app/users, /app/schools, etc.)
-      { path : 'dashboard', component: Panel },
-
-      // Redireciona '.../app' para '.../app/panel'
+      { path: 'dashboard', component: Panel },
+      {
+        path: 'users',
+        loadComponent: () =>
+          import('./pages/app/users/users').then(m => m.Users),
+      },
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
     ]
   },
-
-  // Redireciona a raiz do site ('/') para '/auth/login'
   { path: '', redirectTo: 'auth', pathMatch: 'full' },
 ];
