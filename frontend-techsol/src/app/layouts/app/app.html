@@ -1,0 +1,67 @@
+<div class="flex h-screen bg-gray-100">
+
+  <aside class="flex w-60 flex-col bg-white p-4 shadow-lg">
+    <div class="mb-6 flex items-center justify-center">
+      <img src="assets/logo-senai.svg" alt="SENAI" class="h-10">
+    </div>
+
+    <nav class="flex flex-col space-y-2">
+         <a 
+        [routerLink]="['/app/dashboard']" 
+        class="rounded-lg px-4 py-3 font-medium text-gray-700 hover:bg-blue-100 hover:text-blue-700"
+        >
+        Meu Painel
+      </a>
+      <a 
+        href="#" 
+        class="rounded-lg px-4 py-3 font-medium text-gray-700 hover:bg-blue-100 hover:text-blue-700"
+        >
+        Usuários
+      </a>
+      <a 
+        href="#" 
+        class="rounded-lg px-4 py-3 font-medium text-gray-700 hover:bg-blue-100 hover:text-blue-700"
+        >
+        Escolas
+      </a>
+      <a 
+        href="#" 
+        class="rounded-lg px-4 py-3 font-medium text-gray-700 hover:bg-blue-100 hover:text-blue-700"
+        >
+        Turmas
+      </a>
+      <a 
+        href="#" 
+        class="rounded-lg px-4 py-3 font-medium text-gray-700 hover:bg-blue-100 hover:text-blue-700"
+        >
+        Avaliações
+      </a>
+      <a 
+        [routerLink]="['/app/invites']" 
+        class="rounded-lg px-4 py-3 font-medium text-gray-700 hover:bg-blue-100 hover:text-blue-700"
+        >
+        Convites
+      </a>
+    </nav>
+  </aside>
+
+  <div class="flex flex-1 flex-col">
+
+    <header class="flex h-16 items-center justify-between bg-white px-6 shadow-sm">
+      <div classa="flex items-center">
+        <span class="mr-2 rounded bg-green-200 px-2 py-0.5 text-xs font-bold text-green-700">NOVO</span>
+        <span class="font-semibold text-gray-700">Avaliação Formativa</span>
+      </div>
+
+      <div class="flex items-center space-x-4">
+        <span>Notificações</span>
+        <span>(Perfil do Usuário)</span>
+      </div>
+    </header>
+
+    <main class="flex-1 overflow-y-auto p-8">
+      <router-outlet></router-outlet>
+    </main>
+
+  </div>
+</div>

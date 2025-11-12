@@ -1,0 +1,19 @@
+<div class="flex min-h-screen flex-col bg-[#005A9C]">
+  
+  <header class="w-full bg-black/10 py-2 text-white">
+    <nav class="container mx-auto flex max-w-6xl justify-end gap-6 px-4 text-sm">
+      <button class="font-medium">A+</button>
+      <button class="font-medium">A-</button>
+      <button class="flex items-center gap-2 font-medium">
+        <span class="relative flex h-4 w-4 items-center justify-center rounded-full border border-white">
+          <span class="absolute h-full w-1/2 rounded-l-full bg-white"></span>
+        </span>
+        Theme Switch
+      </button>
+    </nav>
+  </header>
+
+  <main class="flex-grow">
+    <router-outlet></router-outlet>
+  </main>
+</div>

@@ -1,0 +1,74 @@
+<div class="container mx-auto max-w-6xl px-4 py-12 text-white">
+
+  <div class="mb-8 max-w-lg">
+    <h1 class="text-3xl font-light">Bem vindo(a), Usuário(a)</h1>
+    <h2 class="text-4xl font-bold">Selecione o perfil que deseja acessar</h2>
+  </div>
+
+  <div class="grid grid-cols-1 gap-8 md:grid-cols-3">
+
+    <div class="space-y-4 md:col-span-1">
+      <button 
+        *ngFor="let profile of profiles"
+        (click)="selectProfile(profile.name)"
+        [class.bg-white]="selectedProfileName === profile.name"
+        [class.text-blue-700]="selectedProfileName === profile.name"
+        [class.border-transparent]="selectedProfileName === profile.name"
+        [class.border-white]="selectedProfileName !== profile.name"
+        class="w-full rounded-lg border p-4 text-left transition-all hover:bg-white/90 hover:text-blue-700"
+        >
+        <h3 class="text-lg font-semibold">{{ profile.name }}</h3>
+        <p 
+          [class.text-gray-600]="selectedProfileName === profile.name"
+          [class.text-white/80]="selectedProfileName !== profile.name"
+          class="text-sm">
+          O SIAC mudou! Agora para entrar no sistema, é necessário que...
+        </p>
+      </button>
+    </div>
+
+    <div class="rounded-lg bg-white/10 p-6 md:col-span-2">
+
+      <ng-container *ngIf="selectedProfileName === 'Administrador Senai'">
+        <h3 class="mb-4 text-2xl font-bold">{{ selectedProfileName }}</h3>
+        <p class="mb-6 text-lg">
+          O SIAC mudou! Agora para entrar no sistema, é necessário que o
+          usuário escolha a área que deseja acessar. Desta forma, é possível
+          simplificar a experiência do uso do sistema, possibilitando uma
+          visão personalizada para cada contexto.
+        </p>
+
+        <div class="border-t border-white/20 pt-6">
+          <h4 class="mb-4 text-xl font-semibold">
+            Ao escolher a área "Administrador SENAI" você conseguirá:
+          </h4>
+          <ul class="space-y-3">
+            <li *ngFor="let perm of permissions['Administrador Senai']" class="flex items-center gap-3">
+              <span class="flex h-5 w-5 items-center justify-center rounded-full bg-white text-blue-700">✓</span>
+              <span>{{ perm }}</span>
+            </li>
+          </ul>
+        </div>
+      </ng-container>
+
+      <ng-container *ngIf="selectedProfileName !== 'Administrador Senai'">
+         <h3 class="mb-4 text-2xl font-bold">{{ selectedProfileName }}</h3>
+         <p>Descrição para este perfil...</p>
+      </ng-container>
+
+    </div>
+  </div>
+
+  <div class="mt-12 flex items-center justify-between border-t border-white/20 pt-6">
+    <button class="rounded-lg px-5 py-3 font-semibold hover:bg-white/10">
+      Voltar para o início
+    </button>
+    <button 
+      (click)="navigateToApp()"
+      class="rounded-lg bg-white px-8 py-4 text-lg font-bold text-blue-700 shadow-lg hover:bg-gray-100"
+    >
+      Acessar a plataforma
+    </button>
+  </div>
+
+</div>

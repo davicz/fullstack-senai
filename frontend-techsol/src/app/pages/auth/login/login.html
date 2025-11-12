@@ -1,0 +1,54 @@
+<div class="flex min-h-full items-center justify-center px-4 py-20">
+  <div class="w-full max-w-lg">
+    <div class="rounded-2xl bg-white px-8 py-10 shadow-xl">
+      <div class="mb-8 text-center">
+        <img src="assets/logo-tech.svg" alt="TechSolutions" class="mx-auto h-12">
+        <h2 class="mt-4 text-2xl font-bold tracking-tight text-gray-800">
+          Avaliação de Competências
+        </h2>
+        <p class="mt-1 text-gray-600">Bem-vindo(a) de volta!</p>
+      </div>
+      <form class="space-y-6" (ngSubmit)="onSubmit()">
+        <div>
+          <label for="login" class="block text-sm font-medium text-gray-700">
+            E-mail ou CPF
+          </label>
+          <input 
+            id="login" 
+            name="login" 
+            type="text" 
+            [(ngModel)]="login"
+            required
+            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-600 focus:ring-blue-600"
+            placeholder="seu.email@exemplo.com"
+          >
+        </div>
+        <div>
+          <label for="password" class="block text-sm font-medium text-gray-700">
+            Senha
+          </label>
+          <input 
+            id="password" 
+            name="password" 
+            type="password"
+            [(ngModel)]="password"
+            required
+            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-600 focus:ring-blue-600"
+            placeholder="••••••••"
+          >
+        </div>
+        <div class="text-right text-sm">
+          <a href="#" class="font-medium text-blue-600 hover:text-blue-500">
+            Esqueceu a senha?
+          </a>
+        </div>
+        <button 
+          type="submit" 
+          class="flex w-full justify-center rounded-lg bg-[#005A9C] px-4 py-3 text-lg font-semibold text-white shadow-md transition-colors hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+        >
+          Entrar
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
