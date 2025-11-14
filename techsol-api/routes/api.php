@@ -32,6 +32,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/invites/{invitation}/context', [InviteController::class, 'assignContext']);
     Route::post('/invites/{invitation}/send', [InviteController::class, 'send']);
 
+    // Rota para LISTAR os convites
+    Route::get('/invites', [InviteController::class, 'index']);
+
     // Rota de exemplo para obter dados do usuário logado
     Route::get('/user', function (Request $request) {
         return $request->user();

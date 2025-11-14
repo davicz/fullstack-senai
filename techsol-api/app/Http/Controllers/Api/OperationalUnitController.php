@@ -12,25 +12,36 @@ class OperationalUnitController extends Controller
     // Método para listar Unidades Operacionais
     public function index()
     {
-        $user = Auth::user();
+    $user = Auth::user();
 
-        // Admin Nacional vê todas as UOs
-        if ($user->roles->contains('slug', 'national_admin')) {
-            return OperationalUnit::orderBy('name')->get();
+    // Admin Nacional vê todas as UOs
+    if ($user->roles->contains('slug', 'national_admin')) {
+        return OperationalUnit::orderBy('name')->get();
+    }
+
+    // Admin Regional vê apenas as UOs do seu DR
+    if ($user->roles->contains('slug', 'regional_admin')) {
+
+        // Primeiro tenta o campo direto do user
+        $drId = $user->regional_department_id ?? null;
+
+        // Se não tiver, tenta buscar no pivot do role (compatibilidade)
+        if (!$drId) {
+            $regionalAdminRole = $user->roles->where('slug', 'regional_admin')->first();
+            $drId = $regionalAdminRole?->pivot?->regional_department_id ?? null;
         }
 
-        // Admin Regional vê apenas as UOs do seu DR
-        if ($user->roles->contains('slug', 'regional_admin')) {
-            // Precisamos encontrar a qual DR este admin pertence
-            $regionalAdminRole = $user->roles->where('slug', 'regional_admin')->first();
-            $drId = $regionalAdminRole->pivot->regional_department_id;
-            
+        if ($drId) {
             return OperationalUnit::where('regional_department_id', $drId)
                 ->orderBy('name')
                 ->get();
         }
 
+        // se não conseguimos determinar DR para esse regional, retornamos 403
         return response()->json(['message' => 'Acesso não autorizado.'], 403);
+    }
+
+    return response()->json(['message' => 'Acesso não autorizado.'], 403);
     }
 
     // Método para criar uma nova Unidade Operacional

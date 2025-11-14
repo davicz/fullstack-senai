@@ -36,12 +36,13 @@ class AuthController extends Controller
             ]);
         }
 
-        $user = Auth::user();
+        $user = Auth::user()->load('roles');
 
         if ($user->roles->isEmpty()) {
             return response()->json(['message' => 'Este usuário não possui perfis de acesso configurados.'], 403);
         }
         
+        // Se o usuário tiver apenas um perfil, retornamos token final e o selected_role
         if ($user->roles->count() === 1) {
             $token = $user->createToken('auth-token')->plainTextToken;
 
@@ -49,11 +50,11 @@ class AuthController extends Controller
                 'message' => 'Login bem-sucedido!',
                 'access_token' => $token,
                 'user' => $user,
-                'selected_role' => $user->roles->first(),
+                'selected_role' => $user->roles->first(), // mantém retorno consistente
             ]);
         }
         
-        // Cria token temporário (sem tentar passar expires_at — Sanctum não aceita esse parâmetro aqui)
+        // Múltiplos perfis => gerar token temporário e enviar user + temporary_token
         $temporaryToken = $user->createToken('temporary-token')->plainTextToken;
 
         return response()->json([
@@ -65,6 +66,9 @@ class AuthController extends Controller
 
     /**
      * ETAPA 2: Gera o token final baseado no perfil escolhido.
+     *
+     * OBS: O frontend deve salvar o `selected_role` retornado neste JSON (localStorage)
+     * e a aplicação frontend enviará o header X-Selected-Role em requisições subsequentes.
      */
     public function selectProfile(Request $request)
     {
@@ -74,10 +78,11 @@ class AuthController extends Controller
             'user_role_id' => 'required|integer',
         ]);
 
-        // A tabela user_role não possui id, portanto buscamos pela role_id
-        $selectedRolePivot = $user->roles()->where('role_id', $validated['user_role_id'])->first();
+        // Procura se o usuário possui o role_id pedido
+        // Note: se sua tabela pivô tiver id você pode alterar a lógica; aqui buscamos por role_id
+        $selectedRole = $user->roles()->where('role_id', $validated['user_role_id'])->first();
 
-        if (!$selectedRolePivot) {
+        if (!$selectedRole) {
             return response()->json(['message' => 'Perfil inválido ou não pertence a este usuário.'], 403);
         }
         
@@ -87,11 +92,13 @@ class AuthController extends Controller
         // Gera token final
         $finalToken = $user->createToken('auth-token')->plainTextToken;
 
+        // Retornamos o selected_role junto com o token e o usuário.
+        // O frontend deve salvar selected_role em localStorage (siac_user.selected_role)
         return response()->json([
             'message' => 'Perfil selecionado com sucesso!',
             'access_token' => $finalToken,
-            'user' => $user,
-            'selected_role' => $selectedRolePivot,
+            'user' => $user->fresh()->load('roles'),
+            'selected_role' => $selectedRole,
         ]);
     }
     
