@@ -1,204 +1,288 @@
-<div class="mb-6 flex items-center justify-between">
-  <h1 class="text-3xl font-bold text-gray-800">Convites</h1>
-  <button 
-    (click)="openInviteModal()"
-    class="flex items-center gap-2 rounded-lg bg-blue-600 px-5 py-3 font-semibold text-white shadow-md hover:bg-blue-700">
-    <span class="text-xl font-light">+</span>
+<!-- HEADER -->
+<div class="mb-4 flex items-center justify-between">
+  <h1 class="text-xl font-semibold text-gray-800">Convites</h1>
+
+  <button (click)="openInviteModal()"
+    class="flex items-center gap-1 rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow hover:bg-blue-700">
+    <span class="text-lg font-light">+</span>
     Novo
   </button>
 </div>
 
-<div class="rounded-lg bg-white p-6 shadow">
-  <p class="text-gray-600">
-    Convites enviados:
-  </p>
+<!-- LISTA DE CONVITES ENVIADOS -->
+<div class="rounded-md bg-white p-4 shadow">
+
+  <!-- TOPO DA LISTA -->
+  <div class="rounded-md bg-white p-4 shadow">
+    <div class="flex items-center justify-between mb-3">
+      <p class="text-gray-800 text-sm font-medium">Convites enviados:</p>
+
+      <!-- BOTÃO DE RELOAD -->
+      <button (click)="loadSentInvites()"
+        class="p-2 rounded-md hover:bg-gray-200 transition flex items-center justify-center">
+
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"
+          class="h-5 w-5 text-gray-700">
+          <path stroke-linecap="round" stroke-linejoin="round"
+            d="M16.023 9.348h4.992V4.356m-16.008.087A9.004 9.004 0 0112 3c4.97 0 9 4.03 9 9" />
+          <path stroke-linecap="round" stroke-linejoin="round"
+            d="M7.977 14.652H2.985v4.992m16.008-.087A9.004 9.004 0 0112 21c-4.97 0-9-4.03-9-9" />
+        </svg>
+
+      </button>
+
+    </div>
+
+    <!-- INPUT DE BUSCA -->
+    <input type="text" [(ngModel)]="searchTerm" (input)="filterInvites()" placeholder="Buscar por e-mail ou CPF..."
+      class="w-full rounded-md border px-3 py-2 text-sm mb-3 focus:ring-blue-500 focus:border-blue-500" />
+  </div>
+
+
+  <!-- Loading -->
+  <div *ngIf="isListLoading" class="text-gray-500 text-sm">Carregando convites...</div>
+
+  <!-- Erro -->
+  <div *ngIf="listError" class="text-red-600 text-sm">{{ listError }}</div>
+
+  <!-- Lista -->
+  <div *ngIf="!isListLoading && !listError">
+
+    <div *ngIf="filteredInvites.length === 0" class="text-gray-400 text-sm">
+      Nenhum convite encontrado.
+    </div>
+
+    <div *ngFor="let invite of filteredInvites" class="border rounded-md p-3 mb-2 text-sm bg-white relative">
+
+      <!-- LINHA SUPERIOR: STATUS -->
+      <div class="flex justify-between items-start mb-2">
+        <!-- Esquerda -->
+        <div class="space-y-0.5">
+          <div><strong>Email:</strong> {{ invite.email }}</div>
+          <div><strong>CPF:</strong> {{ invite.cpf }}</div>
+          <div><strong>Status:</strong> {{ translateStatus(invite.status) }}</div>
+          <div><strong>Criado em:</strong> {{ invite.created_at | date:'dd/MM/yyyy HH:mm' }}</div>
+        </div>
+
+        <!-- Direita: Caixa de status -->
+        <div class="flex flex-col items-end">
+          <span class="px-3 py-1 text-xs rounded-md border font-medium" [ngClass]="{
+              'bg-green-50 text-green-700 border-green-300': invite.status === 'sent',
+              'bg-yellow-50 text-yellow-700 border-yellow-300': invite.status.includes('pending'),
+              'bg-gray-100 text-gray-600 border-gray-300': !invite.status
+            }">
+            {{ translateStatus(invite.status) }}
+          </span>
+
+          <!-- Botões de ação -->
+          <div class="flex gap-2 mt-2">
+            <button class="text-blue-600 hover:underline text-xs" (click)="openInviteDetails(invite)">Ver
+              detalhes</button>
+
+            <!-- Botões futuros -->
+            <button class="text-yellow-600 hover:underline text-xs opacity-50 cursor-not-allowed">
+              Reenviar
+            </button>
+            <button class="text-red-600 hover:underline text-xs opacity-50 cursor-not-allowed">
+              Cancelar
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
 </div>
 
 
-<div 
-  *ngIf="isModalOpen" 
-  class="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
-  (click.self)="closeInviteModal()">
-  
-  <div class="flex h-full w-full max-w-4xl flex-col bg-white shadow-2xl">
-    
-    <div class="border-b p-6">
-      <h2 class="text-2xl font-semibold text-gray-800">Enviar convite</h2>
-      <p class="text-gray-600">
-        Siga as etapas para convidar um novo usuário para a plataforma.
-      </p>
+<!-- MODAL -->
+<div *ngIf="isModalOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
+  (click.self)="closeInviteModal()" tabindex="-1" (keydown.escape)="closeInviteModal()">
+  <div class="flex w-full max-w-2xl flex-col rounded-lg bg-white shadow-xl max-h-[90vh]">
+
+    <!-- HEADER -->
+    <div class="border-b p-4">
+      <h2 class="text-lg font-semibold text-gray-800">Enviar convite</h2>
+      <p class="text-gray-600 text-sm">Siga as etapas para convidar um novo usuário.</p>
     </div>
 
-    <nav class="flex justify-around border-b p-4">
-      <div class="text-center">
-        <span 
-          class="font-bold"
-          [class.text-blue-600]="currentStep >= 1"
-          [class.text-gray-400]="currentStep < 1">
-          1. Dados pessoais
-        </span>
-      </div>
-      <div class="text-center">
-        <span 
-          class="font-bold"
-          [class.text-blue-600]="currentStep >= 2"
-          [class.text-gray-400]="currentStep < 2">
-          2. Seleção de Perfis
-        </span>
-      </div>
-      <div class="text-center">
-        <span 
-          class="font-bold"
-          [class.text-blue-600]="currentStep >= 3"
-          [class.text-gray-400]="currentStep < 3">
-          3. Atribuição (Escolas)
-        </span>
-      </div>
-      <div class="text-center">
-        <span 
-          class="font-bold"
-          [class.text-blue-600]="currentStep >= 4"
-          [class.text-gray-400]="currentStep < 4">
-          4. Confirmar
-        </span>
-      </div>
+    <!-- STEPPER -->
+    <nav class="flex justify-around border-b p-3 text-sm">
+      <span [class.text-blue-600]="currentStep >= 1" [class.text-gray-400]="currentStep < 1">1. Dados</span>
+      <span [class.text-blue-600]="currentStep >= 2" [class.text-gray-400]="currentStep < 2">2. Perfis</span>
+      <span [class.text-blue-600]="currentStep >= 3" [class.text-gray-400]="currentStep < 3">3. Atribuição</span>
+      <span [class.text-blue-600]="currentStep >= 4" [class.text-gray-400]="currentStep < 4">4. Confirmar</span>
     </nav>
 
+    <!-- CONTENT -->
+    <div class="flex-1 overflow-y-auto p-4 text-sm">
 
-    <div class="flex-1 overflow-y-auto p-6" [ngSwitch]="currentStep">
-      
-      <section *ngSwitchCase="1">
-        <h4 class="mb-6 text-xl font-bold text-gray-800">Dados pessoais</h4>
-        <form (ngSubmit)="goToNextStep()" class="space-y-6">
+      <!-- STEP 1 -->
+      <section *ngIf="currentStep === 1">
+        <h4 class="mb-4 text-base font-semibold text-gray-800">Dados pessoais</h4>
+
+        <div class="space-y-3">
+          <!-- EMAIL -->
           <div>
-            <label for="email" class="block text-sm font-medium text-gray-700">E-mail</label>
-            <input 
-              type="email" id="email" name="email"
-              [(ngModel)]="inviteEmail" required
-              placeholder="Digite o e-mail"
-              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-            >
+            <label class="block text-xs font-medium text-gray-700">E-mail</label>
+            <input type="email" [(ngModel)]="inviteEmail" required placeholder="Digite o e-mail"
+              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm px-3 py-1.5 text-sm focus:border-blue-500 focus:ring-blue-500" />
+            <p *ngIf="fieldErrors?.email" class="text-xs text-red-600 mt-1">{{ fieldErrors.email[0] }}</p>
           </div>
+
+          <!-- CPF -->
           <div>
-            <label for="cpf" class="block text-sm font-medium text-gray-700">CPF</label>
-            <input 
-              type="text" id="cpf" name="cpf"
-              [(ngModel)]="inviteCpf" required
-              placeholder="Digite o CPF"
-              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-            >
+            <label class="block text-xs font-medium text-gray-700">CPF</label>
+            <input type="text" [(ngModel)]="inviteCpf" required placeholder="Digite o CPF (11 dígitos)"
+              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm px-3 py-1.5 text-sm focus:border-blue-500 focus:ring-blue-500" />
+            <p *ngIf="fieldErrors?.cpf" class="text-xs text-red-600 mt-1">{{ fieldErrors.cpf[0] }}</p>
           </div>
-        </form>
+
+          <div *ngIf="errorMessage" class="text-xs text-red-700">{{ errorMessage }}</div>
+        </div>
       </section>
 
-      <section *ngSwitchCase="2">
-        <h4 class="mb-6 text-xl font-bold text-gray-800">Seleção de Perfis</h4>
-        <p class="mb-4 text-gray-600">Agora é possível selecionar mais de um perfil. Basta clicar em cada tipo para ver um resumo.</p>
-        
-        <div class="grid grid-cols-2 gap-4">
-          <div class="space-y-3">
-            <label 
-              *ngFor="let profile of allProfiles"
-              class="flex cursor-pointer items-start space-x-3 rounded-lg border p-4 transition-colors"
-              [class.border-blue-600]="selectedProfiles[profile.id]"
-              [class.bg-blue-50]="selectedProfiles[profile.id]"
-              [class.border-gray-300]="!selectedProfiles[profile.id]"
-            >
-              <input 
-                type="checkbox" 
-                class="mt-1 h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                [(ngModel)]="selectedProfiles[profile.id]"
-              >
+      <!-- STEP 2 -->
+      <section *ngIf="currentStep === 2">
+        <h4 class="mb-4 text-base font-semibold text-gray-800">Seleção de Perfis</h4>
+        <p class="mb-3 text-gray-600 text-xs">Selecione um ou mais perfis.</p>
+
+        <div class="grid grid-cols-2 gap-3">
+          <!-- LISTA DE PERFIS -->
+          <div class="space-y-2">
+            <label *ngFor="let profile of allProfiles"
+              class="flex cursor-pointer items-start gap-2 rounded-md border p-3 transition-colors text-sm"
+              [class.border-blue-600]="selectedProfiles[profile.id]" [class.bg-blue-50]="selectedProfiles[profile.id]">
+              <input type="checkbox" class="mt-1 h-4 w-4" [(ngModel)]="selectedProfiles[profile.id]"
+                [disabled]="getBlockedProfilesForCurrentUser().includes(profile.id)" />
+
               <div>
-                <span 
-                  class="text-lg font-semibold"
-                  [class.text-blue-700]="selectedProfiles[profile.id]"
-                  [class.text-gray-800]="!selectedProfiles[profile.id]"
-                  >
+                <span class="font-medium"
+                  [class.text-gray-400]="getBlockedProfilesForCurrentUser().includes(profile.id)">
                   {{ profile.name }}
                 </span>
-                <p class="text-sm text-gray-600">{{ profile.description }}</p>
+                <p class="text-xs text-gray-600">{{ profile.description }}</p>
               </div>
             </label>
           </div>
-          
-          <div class="rounded-lg border border-gray-200 bg-gray-50 p-4">
-            <h5 class="text-lg font-semibold text-gray-800">Resumo da Seleção</h5>
-            <ul *ngIf="getSelectedProfileNames().length > 0; else noSelection" class="mt-3 list-inside list-disc space-y-1 text-gray-700">
+
+          <!-- RESUMO -->
+          <div class="rounded-md border bg-gray-50 p-3">
+            <h5 class="text-sm font-semibold text-gray-800">Resumo</h5>
+
+            <ul *ngIf="getSelectedProfileNames().length > 0; else noSelection"
+              class="mt-2 list-disc list-inside space-y-1 text-xs text-gray-700">
               <li *ngFor="let name of getSelectedProfileNames()">{{ name }}</li>
             </ul>
+
             <ng-template #noSelection>
-              <p class="mt-3 text-gray-500">Nenhum perfil selecionado.</p>
+              <p class="mt-2 text-xs text-gray-500">Nenhum perfil selecionado.</p>
             </ng-template>
           </div>
         </div>
       </section>
 
-      <section *ngSwitchCase="3">
-        <h4 class="mb-2 text-xl font-bold text-gray-800">Administrador Escola - Atribuição de Escolas</h4>
-        <p class="mb-6 text-gray-600">Selecione as escolas a qual deseja vincular o Administrador?</p>
-        
-        <div class="max-h-96 overflow-y-auto rounded-lg border border-gray-300">
-          <div class="space-y-1 p-4">
-            <label 
-              *ngFor="let school of allSchools"
-              class="flex cursor-pointer items-center space-x-3 rounded p-3 hover:bg-gray-100"
-            >
-              <input 
-                type="checkbox"
-                class="h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                [(ngModel)]="selectedAdminSchoolIds[school.id]"
-              >
-              <span class="text-gray-800">{{ school.name }}</span>
+      <!-- STEP 3 -->
+      <section *ngIf="currentStep === 3">
+        <h4 class="mb-3 text-base font-semibold text-gray-800">Atribuição</h4>
+
+        <!-- REGIONAL -->
+        <div
+          *ngIf="currentUserRoleSlug === 'national_admin' && (selectedProfiles[2] || selectedProfiles[3] || selectedProfiles[4] || selectedProfiles[5])"
+          class="mb-3">
+          <label class="block text-xs font-medium text-gray-700">Escolha a Região</label>
+
+          <select [(ngModel)]="selectedRegionalDepartmentId" (ngModelChange)="onRegionalDepartmentChange()"
+            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm px-3 py-1.5 text-sm">
+            <option [ngValue]="null">Selecione...</option>
+            <option *ngFor="let r of regionalDepartments" [ngValue]="r.id">{{ r.name }}</option>
+          </select>
+        </div>
+
+        <!-- UO -->
+        <div *ngIf="(selectedProfiles[3] || selectedProfiles[4] || selectedProfiles[5]) &&
+                 (currentUserRoleSlug === 'regional_admin' ||
+                  (currentUserRoleSlug === 'national_admin' && selectedRegionalDepartmentId))" class="mb-3">
+          <label class="block text-xs font-medium text-gray-700">Escolha a Escola</label>
+
+          <div class="max-h-48 overflow-y-auto border rounded p-2">
+            <label *ngFor="let u of operationalUnitsDisplayed"
+              class="flex items-center gap-2 p-2 hover:bg-gray-50 text-sm">
+              <input type="checkbox" [checked]="selectedAdminSchoolIds[u.id]" (change)="toggleSelectAdminSchool(u.id)"
+                class="h-4 w-4" />
+
+              <div>
+                <div class="text-sm font-medium">{{ u.name }}</div>
+                <div class="text-xs text-gray-500">
+                  Região: {{ getRegionalDepartmentName(u.regional_department_id ?? null) }}
+                </div>
+              </div>
             </label>
+
+            <div *ngIf="operationalUnitsDisplayed.length === 0" class="p-3 text-center text-xs text-gray-500">
+              Nenhuma escola encontrada.
+            </div>
           </div>
         </div>
+
+        <div *ngIf="errorMessage" class="text-xs text-red-700 mt-2">{{ errorMessage }}</div>
       </section>
 
-      <section *ngSwitchCase="4" class="text-center">
-        <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-blue-100 text-blue-600">
-          <svg class="h-8 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+      <!-- STEP 4 -->
+      <section *ngIf="currentStep === 4" class="text-center">
+        <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-blue-100 text-blue-600">
+          <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+          </svg>
         </div>
-        <h4 class="mt-6 text-2xl font-bold text-gray-800">Deseja enviar o convite?</h4>
-        <p class="mt-2 text-gray-600">Para revisar, clique em um dos perfis atribuídos(ou clique em 'Voltar').</p>
-        
-        <div class="mt-6 flex flex-wrap justify-center gap-4">
-          <span 
-            *ngFor="let name of getSelectedProfileNames()"
-            class="rounded-full bg-gray-200 px-4 py-2 font-medium text-gray-800">
-            {{ name }}
-          </span>
+
+        <h4 class="mt-4 text-lg font-semibold text-gray-800">Confirmar envio do convite</h4>
+        <p class="mt-1 text-gray-600 text-sm">Revise os dados abaixo antes de enviar.</p>
+
+        <div class="mt-3 space-y-1 text-left max-w-md mx-auto text-sm">
+          <div><strong>E-mail:</strong> {{ inviteEmail }}</div>
+          <div><strong>CPF:</strong> {{ inviteCpf }}</div>
+          <div><strong>Perfis:</strong> {{ getSelectedProfileNames().join(', ') || '—' }}</div>
+
+          <div *ngIf="selectedRegionalDepartmentId">
+            <strong>Região:</strong> {{ getRegionalDepartmentName(selectedRegionalDepartmentId) }}
+          </div>
+
+          <div *ngIf="hasSelectedSchools()">
+            <strong>Escola:</strong> {{ getSelectedSchoolNames().join(', ') }}
+          </div>
         </div>
+
+        <div *ngIf="errorMessage" class="text-xs text-red-700 mt-2">{{ errorMessage }}</div>
+        <div *ngIf="successMessage" class="text-xs text-green-700 mt-2">{{ successMessage }}</div>
       </section>
+
     </div>
 
-    <div class="flex justify-between border-t bg-gray-50 p-6">
-      <button 
-        (click)="closeInviteModal()"
-        class="rounded-lg px-6 py-3 font-semibold text-gray-700 hover:bg-gray-200">
+    <!-- FOOTER -->
+    <div class="flex justify-between border-t bg-gray-50 p-4 text-sm">
+      <button (click)="closeInviteModal()" class="rounded-md px-4 py-2 font-medium text-gray-700 hover:bg-gray-200">
         Cancelar
       </button>
-      
-      <div>
-        <button 
-          *ngIf="currentStep > 1"
-          (click)="goToPreviousStep()"
-          class="mr-4 rounded-lg px-6 py-3 font-semibold text-gray-700 hover:bg-gray-200">
+
+      <div class="flex gap-2">
+        <button *ngIf="currentStep > 1" (click)="goToPreviousStep()" [disabled]="isLoading"
+          class="rounded-md px-4 py-2 font-medium text-gray-700 hover:bg-gray-200 disabled:opacity-50">
           Voltar
         </button>
 
-        <button 
-          *ngIf="currentStep < 4"
-          (click)="goToNextStep()"
-          class="rounded-lg bg-blue-600 px-8 py-3 font-semibold text-white shadow-md hover:bg-blue-700">
-          Continuar
+        <button *ngIf="currentStep < 4" (click)="goToNextStep()" [disabled]="isLoading"
+          class="rounded-md bg-blue-600 px-5 py-2 font-medium text-white shadow hover:bg-blue-700 disabled:opacity-50">
+          <span *ngIf="!isLoading">Continuar</span>
+          <span *ngIf="isLoading">Aguarde...</span>
         </button>
-        
-        <button 
-          *ngIf="currentStep === 4"
-          (click)="sendInvite()"
-          class="rounded-lg bg-green-600 px-8 py-3 font-semibold text-white shadow-md hover:bg-green-700">
-          Convidar 
+
+        <button *ngIf="currentStep === 4" (click)="sendInvite()" [disabled]="isLoading"
+          class="rounded-md bg-green-600 px-5 py-2 font-medium text-white shadow hover:bg-green-700 disabled:opacity-50">
+          <span *ngIf="!isLoading">Convidar</span>
+          <span *ngIf="isLoading">Enviando...</span>
         </button>
       </div>
     </div>

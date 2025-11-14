@@ -1,4 +1,5 @@
-import { ApplicationConfig, importProvidersFrom, provideZonelessChangeDetection } from '@angular/core';
+// src/app/app.config.ts
+import { ApplicationConfig, importProvidersFrom } from '@angular/core'; // REMOVIDO 'provideZonelessChangeDetection'
 import { provideRouter } from '@angular/router';
 import { routes } from './app.routes';
 import { provideHttpClient, withFetch, withInterceptors } from '@angular/common/http';
@@ -7,14 +8,14 @@ import { provideAnimations } from '@angular/platform-browser/animations';
 import { authInterceptor } from './interceptors/auth';
 
 export const appConfig: ApplicationConfig = {
-  providers: [
-    provideZonelessChangeDetection(), 
-    provideRouter(routes),
-    provideHttpClient(
+  providers: [
+    // provideZonelessChangeDetection(), // <-- LINHA REMOVIDA
+    provideRouter(routes),
+    provideHttpClient(
       withFetch(),
-      withInterceptors([authInterceptor]) // 👈 Interceptor adicionado aqui!
-    ),
-    importProvidersFrom(FormsModule),
-    provideAnimations()
-  ]
+      withInterceptors([authInterceptor])
+    ),
+    importProvidersFrom(FormsModule),
+    provideAnimations()
+  ]
 };
