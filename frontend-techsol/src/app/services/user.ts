@@ -17,7 +17,7 @@ export class User {
   /**
    * Busca lista paginada de usuários, com filtro opcional.
    */
-  getUsers(page: number = 1, search: string = ''): Observable<any> {
+  getUsers(page: number = 1, searchTerm: string = ''): Observable<any> {
     const token = this.auth.getFinalToken();
 
     const headers = new HttpHeaders({
@@ -25,9 +25,11 @@ export class User {
       'Accept': 'application/json'
     });
 
-    let params = new HttpParams()
-      .set('page', page.toString())
-      .set('search', search);
+    let params = new HttpParams().set('page', page.toString()); // Adicionado o ;
+    
+    if (searchTerm) {
+      params = params.set('search', searchTerm);
+    }
 
     return this.http.get(this.apiUrl, { headers, params });
   }

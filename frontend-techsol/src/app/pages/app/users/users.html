@@ -3,78 +3,103 @@
 </div>
 
 <div class="mb-6 rounded-lg bg-white p-6 shadow">
-  <div class="grid grid-cols-1 gap-4 md:grid-cols-4">
-    <div>
-      <label for="search_name" class="block text-sm font-medium text-gray-700">Nome</label>
-      <input type="text" id="search_name" class="form-input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-600 focus:ring-blue-600" placeholder="Buscar por nome...">
+  <div class="grid grid-cols-1 gap-4 md:grid-cols-4 items-end">
+    <div class="md:col-span-3">
+      <label for="search_name" class="block text-sm font-medium text-gray-700">Busca de usuários</label>
+      <input 
+        #searchInput
+        (input)="onSearch($event)"
+        type="text" 
+        id="search_name" 
+        class="form-input px-4 py-1 placeholder-gray-400 mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-600" 
+        placeholder="Digite nome, email ou CPF do usuário"
+      >
     </div>
     <div>
-      <label class="block text-sm font-medium text-gray-700">Ações</label>
-      <div class="mt-1">
-        <button class="rounded-md bg-blue-600 px-4 py-2 text-sm text-white hover:bg-blue-700">Filtrar</button>
-        <button class="ml-2 rounded-md bg-gray-200 px-4 py-2 text-sm text-gray-700 hover:bg-gray-300">Limpar</button>
+      <div class="mt-1 flex">
+        <button 
+          (click)="clearSearch(searchInput)"
+          class="w-full rounded-md bg-gray-200 px-4 py-2 text-sm text-gray-700 hover:bg-gray-300 transition-colors"
+        >
+          Limpar Filtro
+        </button>
       </div>
     </div>
   </div>
 </div>
 
 @if (isLoading) {
-  <div class="rounded-lg bg-white p-6 text-center shadow">
-    <p class="text-gray-600">Carregando usuários...</p>
+  <div class="rounded-lg bg-white p-12 text-center shadow animate-pulse">
+    <div class="mx-auto h-12 w-12 text-gray-400">
+      <svg class="animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+      </svg>
     </div>
+    <p class="mt-4 text-gray-600">Buscando dados...</p>
+  </div>
 }
+
 @if (errorMessage) {
-  <div class="rounded-lg bg-red-50 p-6 text-center shadow">
-    <p class="text-red-700">{{ errorMessage }}</p>
+  <div class="rounded-lg bg-red-50 p-6 text-center shadow border border-red-200">
+    <p class="text-red-700 font-semibold">{{ errorMessage }}</p>
+    <button (click)="loadUsers()" class="mt-2 text-sm text-red-600 underline">Tentar novamente</button>
   </div>
 }
 
 @if (!isLoading && !errorMessage) {
-  <div class="rounded-lg bg-white shadow-sm ring-1 ring-gray-900/5">
-    <table class="min-w-full divide-y divide-gray-300">
-      <thead class="bg-gray-50">
-        <tr>
-          <th scope="col" class="py-3.5 pl-6 pr-3 text-left text-sm font-semibold text-gray-900">Usuário (Nome/Email)</th>
-          <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">CPF</th>
-          <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Perfis</th>
-          <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Status</th>
-          <th scope="col" class="relative py-3.5 pl-3 pr-6">
-            <span class="sr-only">Ações</span>
-          </th>
-        </tr>
-      </thead>
-      <tbody class="divide-y divide-gray-200 bg-white">
-        
-        @for (user of users; track user.id) {
+  <div class="rounded-lg bg-white shadow-sm ring-1 ring-gray-900/5 overflow-hidden">
+    <div class="overflow-x-auto">
+      <table class="min-w-full divide-y divide-gray-300">
+        <thead class="bg-gray-50">
           <tr>
-            <td class="whitespace-nowrap py-4 pl-6 pr-3 text-sm">
-              <div class="font-medium text-gray-900">{{ user.name }}</div>
-              <div class="text-gray-500">{{ user.email }}</div>
-            </td>
-            <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{{ user.cpf }}</td>
-            <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-              <span class="inline-flex rounded-full bg-green-100 px-2 text-xs font-semibold leading-5 text-green-800">
-                {{ getRoleNames(user.roles) }}
-              </span>
-            </td>
-            <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-              <span class="inline-flex rounded-full bg-green-100 px-2 text-xs font-semibold leading-5 text-green-800">
-                Ativo
-              </span>
-            </td>
-            <td class="relative whitespace-nowrap py-4 pl-3 pr-6 text-right text-sm font-medium">
-              <a href="#" class="text-blue-600 hover:text-blue-900">Editar</a>
-            </td>
+            <th scope="col" class="py-3.5 pl-6 pr-3 text-left text-sm font-semibold text-gray-900">Usuário (Nome/Email)</th>
+            <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">CPF</th>
+            <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Perfis</th>
+            <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Status</th>
+            <th scope="col" class="relative py-3.5 pl-3 pr-6">
+              <span class="sr-only">Ações</span>
+            </th>
           </tr>
-        } @empty {
-          <tr>
-            <td colspan="5" class="py-12 text-center text-gray-500">
-              Nenhum usuário encontrado.
-            </td>
-          </tr>
-        }
+        </thead>
+        <tbody class="divide-y divide-gray-200 bg-white">
+          
+          @for (user of users; track user.id) {
+            <tr class="hover:bg-gray-50 transition-colors">
+              <td class="whitespace-nowrap py-4 pl-6 pr-3 text-sm">
+                <div class="font-medium text-gray-900">{{ user.name }}</div>
+                <div class="text-gray-500">{{ user.email }}</div>
+              </td>
+              <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{{ user.cpf }}</td>
+              <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                <span class="inline-flex rounded-full bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-700/10">
+                  {{ getRoleNames(user.roles) }}
+                </span>
+              </td>
+              <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                <span class="inline-flex rounded-full bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20">
+                  Ativo
+                </span>
+              </td>
+              <td class="relative whitespace-nowrap py-4 pl-3 pr-6 text-right text-sm font-medium">
+                <a href="#" class="text-blue-600 hover:text-blue-900">Editar</a>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="5" class="py-12 text-center text-gray-500">
+                <div class="flex flex-col items-center justify-center">
+                  <svg class="h-12 w-12 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                  <p class="mt-2">Nenhum usuário encontrado com esse filtro.</p>
+                </div>
+              </td>
+            </tr>
+          }
 
-      </tbody>
-    </table>
+        </tbody>
+      </table>
     </div>
+  </div>
 }
