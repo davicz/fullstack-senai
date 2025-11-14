@@ -1,28 +1,52 @@
-<div class="mb-6 flex items-center justify-between">
-
-  <h1 class="text-3xl font-bold text-gray-800">Bem vindo ao seu perfil</h1>
-
+<!-- TITULO -->
+<div class="mb-6">
+  <h1 class="text-2xl font-semibold text-gray-800">
+    Bem-vindo, {{ user?.name }}!
+  </h1>
+  <p class="text-gray-600 text-sm">
+    Perfil: {{ user?.selected_role?.name || user?.roles?.[0]?.name }}
+  </p>
 </div>
 
+<!-- CARDS -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+  <div *ngFor="let stat of stats" class="rounded-lg p-5 shadow bg-white border-l-4" [ngClass]="{
+         'border-blue-500': stat.color === 'blue',
+         'border-green-500': stat.color === 'green',
+         'border-purple-500': stat.color === 'purple'
+       }">
+    <div class="text-3xl">{{ stat.icon }}</div>
+    <div class="mt-2 text-gray-800 text-xl font-bold">
+      {{ stat.value }}
+    </div>
+    <div class="text-gray-600 text-sm">
+      {{ stat.label }}
+    </div>
+  </div>
+</div>
 
+<!-- ATALHOS RÁPIDOS -->
+<div *ngIf="shortcuts.length > 0" class="rounded-lg bg-white p-6 shadow mb-6">
+  <h2 class="text-lg font-semibold text-gray-800 mb-4">Atalhos Rápidos</h2>
+
+  <div class="flex flex-wrap gap-3">
+    <a *ngFor="let sc of shortcuts" [routerLink]="sc.route"
+      class="flex items-center gap-2 rounded-md bg-blue-50 px-4 py-2 text-sm font-medium text-blue-700 border border-blue-200 hover:bg-blue-100">
+      <span>{{ sc.icon }}</span> {{ sc.label }}
+    </a>
+  </div>
+</div>
+
+<!-- INFORMAÇÕES DO PERFIL -->
 <div class="rounded-lg bg-white p-6 shadow">
+  <h2 class="text-lg font-semibold text-gray-800 mb-3">Informações do Usuário</h2>
 
-  <p class="text-gray-600">
-
-    Detalhes do Perfil
-
-  </p>
-
-  <p class="text-gray-600">
-
-    News
-
-  </p>
-
-  <p class="text-gray-600">
-
-    Notificações
-
-  </p>
-
-</div> 
+  <div class="text-sm space-y-1 text-gray-700">
+    <p><strong>Nome:</strong> {{ user?.name }}</p>
+    <p><strong>Email:</strong> {{ user?.email }}</p>
+    <p><strong>CPF:</strong> {{ user?.cpf }}</p>
+    <p *ngIf="user?.selected_role?.name">
+      <strong>Perfil selecionado:</strong> {{ user.selected_role.name }}
+    </p>
+  </div>
+</div>
