@@ -1,52 +1,70 @@
-<!-- TITULO -->
-<div class="mb-6">
-  <h1 class="text-2xl font-semibold text-gray-800">
-    Bem-vindo, {{ user?.name }}!
+<div class="px-6 py-4">
+  <!-- Boas-vindas -->
+  <h1 class="text-2xl font-bold text-gray-800 mb-6">
+    Olá, {{ user?.name }} 👋
   </h1>
-  <p class="text-gray-600 text-sm">
-    Perfil: {{ user?.selected_role?.name || user?.roles?.[0]?.name }}
-  </p>
-</div>
 
-<!-- CARDS -->
-<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-  <div *ngFor="let stat of stats" class="rounded-lg p-5 shadow bg-white border-l-4" [ngClass]="{
-         'border-blue-500': stat.color === 'blue',
-         'border-green-500': stat.color === 'green',
-         'border-purple-500': stat.color === 'purple'
-       }">
-    <div class="text-3xl">{{ stat.icon }}</div>
-    <div class="mt-2 text-gray-800 text-xl font-bold">
-      {{ stat.value }}
-    </div>
-    <div class="text-gray-600 text-sm">
-      {{ stat.label }}
+  <!-- Cards principais -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+    <div *ngFor="let stat of stats"
+      class="flex items-center gap-4 rounded-lg bg-white p-4 shadow hover:shadow-md transition">
+
+      <div class="text-3xl">{{ stat.icon }}</div>
+
+      <div>
+        <p class="text-sm text-gray-600">{{ stat.label }}</p>
+        <p class="text-xl font-bold text-gray-800">{{ stat.value }}</p>
+      </div>
     </div>
   </div>
-</div>
 
-<!-- ATALHOS RÁPIDOS -->
-<div *ngIf="shortcuts.length > 0" class="rounded-lg bg-white p-6 shadow mb-6">
-  <h2 class="text-lg font-semibold text-gray-800 mb-4">Atalhos Rápidos</h2>
+  <!-- Gráficos -->
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
 
-  <div class="flex flex-wrap gap-3">
+    <!-- Evolução mensal -->
+    <div class="bg-white rounded-lg shadow p-4">
+      <h2 class="text-sm font-semibold mb-3 text-gray-700">Evolução Mensal</h2>
+      <div class="h-64">
+        <canvas baseChart [type]="'line'" [data]="lineChartData" [options]="lineChartOptions">
+        </canvas>
+      </div>
+    </div>
+
+    <!-- Distribuição por perfil -->
+    <div class="bg-white rounded-lg shadow p-4">
+      <h2 class="text-sm font-semibold mb-3 text-gray-700">Distribuição por Perfil</h2>
+      <div class="h-64">
+        <canvas baseChart [type]="'doughnut'" [data]="doughnutData" [options]="doughnutOptions">
+        </canvas>
+      </div>
+    </div>
+
+    <!-- Escolas por região -->
+    <div class="bg-white rounded-lg shadow p-4">
+      <h2 class="text-sm font-semibold mb-3 text-gray-700">Escolas por Região</h2>
+      <div class="h-64">
+        <canvas baseChart [type]="'bar'" [data]="barChartData" [options]="barChartOptions">
+        </canvas>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Acessos rápidos -->
+  <h2 class="text-lg font-semibold text-gray-800 mb-3">Acessos rápidos</h2>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+
     <a *ngFor="let sc of shortcuts" [routerLink]="sc.route"
-      class="flex items-center gap-2 rounded-md bg-blue-50 px-4 py-2 text-sm font-medium text-blue-700 border border-blue-200 hover:bg-blue-100">
-      <span>{{ sc.icon }}</span> {{ sc.label }}
+      class="flex flex-col items-center justify-center gap-3 rounded-lg bg-white p-6 shadow hover:shadow-lg transition cursor-pointer">
+
+      <div class="text-3xl">{{ sc.icon }}</div>
+
+      <p class="text-base font-medium text-gray-700">
+        {{ sc.label }}
+      </p>
     </a>
-  </div>
-</div>
 
-<!-- INFORMAÇÕES DO PERFIL -->
-<div class="rounded-lg bg-white p-6 shadow">
-  <h2 class="text-lg font-semibold text-gray-800 mb-3">Informações do Usuário</h2>
-
-  <div class="text-sm space-y-1 text-gray-700">
-    <p><strong>Nome:</strong> {{ user?.name }}</p>
-    <p><strong>Email:</strong> {{ user?.email }}</p>
-    <p><strong>CPF:</strong> {{ user?.cpf }}</p>
-    <p *ngIf="user?.selected_role?.name">
-      <strong>Perfil selecionado:</strong> {{ user.selected_role.name }}
-    </p>
   </div>
+
 </div>

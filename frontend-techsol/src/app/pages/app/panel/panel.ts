@@ -3,10 +3,16 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 
+import { BaseChartDirective } from 'ng2-charts';
+import { Chart, registerables, ChartData, ChartOptions, ChartType } from 'chart.js';
+
+// 🔥 Registro obrigatório do Chart.js 4
+Chart.register(...registerables);
+
 @Component({
   selector: 'app-panel',
   standalone: true,
-  imports: [CommonModule, RouterModule],  // <--- ADICIONE ISSO
+  imports: [CommonModule, RouterModule, BaseChartDirective],
   templateUrl: './panel.html',
   styleUrl: './panel.css',
 })
@@ -17,6 +23,86 @@ export class Panel implements OnInit {
 
   stats: Array<{ label: string; value: number; icon: string; color: string }> = [];
   shortcuts: Array<{ label: string; route: string; icon: string }> = [];
+
+  // -------------------------
+  // LINE CHART
+  // -------------------------
+  lineChartType: ChartType = 'line';
+  lineChartData: ChartData<'line'> = {
+    labels: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun'],
+    datasets: [
+      {
+        data: [50, 120, 180, 240, 300, 420],
+        label: 'Usuários cadastrados',
+        fill: true,
+        tension: 0.35,
+        borderWidth: 2,
+        borderColor: '#2563eb',
+        backgroundColor: 'rgba(37,99,235,0.25)',
+        pointBackgroundColor: '#1d4ed8',
+        pointRadius: 4
+      }
+    ]
+  };
+
+  lineChartOptions: ChartOptions<'line'> = {
+    responsive: true,
+    maintainAspectRatio: false
+  };
+
+  // -------------------------
+  // DOUGHNUT
+  // -------------------------
+  doughnutType: ChartType = 'doughnut';
+  doughnutData: ChartData<'doughnut'> = {
+  labels: ['SENAI', 'DRs', 'Unidades', 'Docentes', 'Alunos'],
+  datasets: [
+    {
+      label: 'Quantidade',
+      data: [2, 10, 80, 260, 1400],
+      backgroundColor: [
+        '#2563eb',
+        '#16a34a',
+        '#ca8a04',
+        '#9333ea',
+        '#dc2626'
+      ]
+    }
+  ]
+  };
+
+  doughnutOptions: ChartOptions<'doughnut'> = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: {
+    legend: { display: false }
+  }
+};
+
+  // -------------------------
+  // BAR
+  // -------------------------
+  barChartType: ChartType = 'bar';
+  barChartData: ChartData<'bar'> = {
+    labels: ['AL', 'PE', 'PB', 'BA', 'SE'],
+    datasets: [
+      {
+        label: 'Unidades Operacionais',
+        data: [8, 12, 5, 10, 3],
+        backgroundColor: '#0ea5e9',
+        borderRadius: 6
+      }
+    ]
+  };
+
+  barChartOptions: ChartOptions<'bar'> = {
+    responsive: true,
+    maintainAspectRatio: false,
+    scales: {
+      x: { grid: { display: false } },
+      y: { beginAtZero: true }
+    }
+  };
 
   ngOnInit(): void {
     this.loadUser();
@@ -41,57 +127,17 @@ export class Panel implements OnInit {
   private loadDashboardData() {
     if (!this.roleSlug) return;
 
-    switch (this.roleSlug) {
-      case 'national_admin':
-        this.stats = [
-          { label: 'Departamentos Regionais', value: 27, icon: '🏢', color: 'blue' },
-          { label: 'Unidades Operacionais', value: 550, icon: '🏫', color: 'green' },
-          { label: 'Usuários Cadastrados', value: 12000, icon: '👥', color: 'purple' },
-        ];
-        this.shortcuts = [
-          { label: 'Gerenciar Usuários', route: '/app/users', icon: '👥' },
-          { label: 'Criar Convite', route: '/app/invites', icon: '✉️' },
-        ];
-        break;
+    if (this.roleSlug === 'national_admin') {
+      this.stats = [
+        { label: 'Departamentos Regionais', value: 27, icon: '🏢', color: 'blue' },
+        { label: 'Unidades Operacionais', value: 550, icon: '🏫', color: 'green' },
+        { label: 'Usuários', value: 12000, icon: '👥', color: 'purple' },
+      ];
 
-      case 'regional_admin':
-        this.stats = [
-          { label: 'Unidades no Estado', value: 12, icon: '🏫', color: 'green' },
-          { label: 'Docentes', value: 220, icon: '📘', color: 'purple' },
-          { label: 'Alunos Ativos', value: 1800, icon: '👨‍🎓', color: 'blue' },
-        ];
-        this.shortcuts = [
-          { label: 'Convites', route: '/app/invites', icon: '✉️' },
-          { label: 'Usuários', route: '/app/users', icon: '👥' },
-        ];
-        break;
-
-      case 'unit_admin':
-        this.stats = [
-          { label: 'Turmas Abertas', value: 8, icon: '📚', color: 'blue' },
-          { label: 'Docentes', value: 30, icon: '👩‍🏫', color: 'purple' },
-          { label: 'Alunos', value: 480, icon: '👨‍🎓', color: 'green' },
-        ];
-        this.shortcuts = [
-          { label: 'Gerenciar Usuários', route: '/app/users', icon: '👤' },
-        ];
-        break;
-
-      case 'teacher':
-        this.stats = [
-          { label: 'Avaliações Pendentes', value: 3, icon: '📝', color: 'purple' },
-          { label: 'Turmas', value: 5, icon: '📚', color: 'blue' },
-        ];
-        this.shortcuts = [];
-        break;
-
-      case 'student':
-        this.stats = [
-          { label: 'Avaliações Disponíveis', value: 2, icon: '📝', color: 'purple' },
-          { label: 'Desempenho Geral', value: 87, icon: '📊', color: 'green' },
-        ];
-        this.shortcuts = [];
-        break;
+      this.shortcuts = [
+        { label: 'Gerenciar Usuários', route: '/app/users', icon: '👥' },
+        { label: 'Criar Convite', route: '/app/invites', icon: '✉️' },
+      ];
     }
   }
 }
