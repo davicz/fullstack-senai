@@ -65,4 +65,17 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('/users/{user}/classes', [UserClassAssociationController::class, 'index']);
     Route::put('/users/{user}/classes', [UserClassAssociationController::class, 'sync']);
+
+    Route::get('/turnos', fn() => [
+        ['id'=>'manha','name'=>'Manhã'],
+        ['id'=>'tarde','name'=>'Tarde'],
+        ['id'=>'noite','name'=>'Noite'],
+        ['id'=>'integral','name'=>'Integral'],
+    ]);
+
+    Route::get('/origens', fn() => [
+        ['id'=>1,'name'=>'SIAC'],
+        ['id'=>2,'name'=>'IMPORTADO'],
+        ['id'=>3,'name'=>'OUTRO SISTEMA'],
+    ]);
 });

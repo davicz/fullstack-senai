@@ -1,0 +1,302 @@
+<!-- HEADER -->
+<div class="mb-4 flex items-center justify-between">
+    <h1 class="text-xl font-semibold text-gray-800">Turmas</h1>
+
+    <button (click)="abrirModalNova()"
+        class="flex items-center gap-1 rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow hover:bg-blue-700">
+        <span class="text-lg font-light">+</span>
+        Novo
+    </button>
+</div>
+
+<!-- FILTROS -->
+<div class="rounded-md bg-white p-4 shadow mb-4">
+    <div class="flex items-center justify-between mb-3">
+        <p class="text-gray-800 text-sm font-medium">Filtros:</p>
+
+        <button (click)="loadTurmas()"
+            class="p-2 rounded-md hover:bg-gray-200 transition flex items-center justify-center"
+            title="Recarregar lista">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
+                stroke="currentColor" class="h-5 w-5 text-gray-700">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M16.023 9.348h4.992V4.356m-16.008.087A9.004 9.004 0 0112 3c4.97 0 9 4.03 9 9" />
+                <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M7.977 14.652H2.985v4.992m16.008-.087A9.004 9.004 0 0112 21c-4.97 0-9-4.03-9-9" />
+            </svg>
+        </button>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-8 gap-3">
+        <!-- Código da Turma -->
+        <div class="lg:col-span-1">
+            <label class="block text-xs font-medium text-gray-700 mb-1">Turma:</label>
+            <input type="text" [(ngModel)]="filtroTurma" placeholder="Código da turma"
+                class="w-full rounded-md border px-3 py-1.5 text-sm focus:ring-blue-500 focus:border-blue-500" />
+        </div>
+
+        <!-- Origem -->
+        <div class="lg:col-span-1">
+            <label class="block text-xs font-medium text-gray-700 mb-1">Origem:</label>
+            <select [(ngModel)]="filtroOrigem"
+                class="w-full rounded-md border px-3 py-1.5 text-sm focus:ring-blue-500 focus:border-blue-500">
+                <option [ngValue]="null">Origem</option>
+                <option *ngFor="let origem of origens" [ngValue]="origem.id">{{ origem.name }}</option>
+            </select>
+        </div>
+
+        <!-- Turno -->
+        <div class="lg:col-span-1">
+            <label class="block text-xs font-medium text-gray-700 mb-1">Turno:</label>
+            <select [(ngModel)]="filtroTurno"
+                class="w-full rounded-md border px-3 py-1.5 text-sm focus:ring-blue-500 focus:border-blue-500">
+                <option value="">Turno</option>
+                <option *ngFor="let turno of turnos" [value]="turno.id">{{ turno.name }}</option>
+            </select>
+        </div>
+
+        <!-- DR -->
+        <div class="lg:col-span-1">
+            <label class="block text-xs font-medium text-gray-700 mb-1">DR:</label>
+            <select [(ngModel)]="filtroDR"
+                class="w-full rounded-md border px-3 py-1.5 text-sm focus:ring-blue-500 focus:border-blue-500">
+                <option [ngValue]="null">Departamento re...</option>
+                <option *ngFor="let dr of regionalDepartments" [ngValue]="dr.id">{{ dr.name }}</option>
+            </select>
+        </div>
+
+        <!-- Escola -->
+        <div class="lg:col-span-1">
+            <label class="block text-xs font-medium text-gray-700 mb-1">Escola:</label>
+            <input type="text" [(ngModel)]="filtroEscola" placeholder="Nome da escola"
+                class="w-full rounded-md border px-3 py-1.5 text-sm focus:ring-blue-500 focus:border-blue-500" />
+        </div>
+
+        <!-- Curso -->
+        <div class="lg:col-span-1">
+            <label class="block text-xs font-medium text-gray-700 mb-1">Curso:</label>
+            <input type="text" [(ngModel)]="filtroCurso" placeholder="Curso"
+                class="w-full rounded-md border px-3 py-1.5 text-sm focus:ring-blue-500 focus:border-blue-500" />
+        </div>
+
+        <!-- Docente -->
+        <div class="lg:col-span-1">
+            <label class="block text-xs font-medium text-gray-700 mb-1">Docente:</label>
+            <input type="text" [(ngModel)]="filtroDocente" placeholder="Nome do responsá..."
+                class="w-full rounded-md border px-3 py-1.5 text-sm focus:ring-blue-500 focus:border-blue-500" />
+        </div>
+
+        <!-- Aluno -->
+        <div class="lg:col-span-1">
+            <label class="block text-xs font-medium text-gray-700 mb-1">Aluno:</label>
+            <input type="text" [(ngModel)]="filtroAluno" placeholder="Quantidade de alun..."
+                class="w-full rounded-md border px-3 py-1.5 text-sm focus:ring-blue-500 focus:border-blue-500" />
+        </div>
+    </div>
+
+    <!-- Botões de ação dos filtros -->
+    <div class="flex gap-2 mt-3">
+        <button (click)="aplicarFiltros()"
+            class="px-4 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 transition">
+            Filtrar
+        </button>
+        <button (click)="limparFiltros()"
+            class="px-4 py-2 bg-gray-200 text-gray-700 text-sm rounded-md hover:bg-gray-300 transition">
+            Limpar
+        </button>
+    </div>
+</div>
+
+<!-- CONTADOR -->
+<div class="mb-4">
+    <p class="text-sm text-gray-600">
+        <span class="text-blue-600 font-bold text-lg">{{ filteredTurmas.length }}</span>
+        <span class="font-medium">turmas listadas.</span>
+    </p>
+</div>
+
+<!-- LISTA DE TURMAS -->
+<div class="rounded-md bg-white shadow overflow-hidden">
+    <!-- Loading -->
+    <div *ngIf="isListLoading" class="p-4 text-gray-500 text-sm text-center">
+        Carregando turmas...
+    </div>
+
+    <!-- Erro -->
+    <div *ngIf="listError" class="p-4 text-red-600 text-sm text-center">
+        {{ listError }}
+    </div>
+
+    <!-- Tabela -->
+    <div *ngIf="!isListLoading && !listError" class="overflow-x-auto">
+        <table class="w-full text-sm">
+            <thead class="bg-gray-50 border-b">
+                <tr>
+                    <th class="px-4 py-3 text-left">
+                        <input type="checkbox" class="rounded" />
+                    </th>
+                    <th class="px-4 py-3 text-left font-medium text-gray-700 cursor-pointer hover:text-blue-600">
+                        Turma ↕
+                    </th>
+                    <th class="px-4 py-3 text-left font-medium text-gray-700 cursor-pointer hover:text-blue-600">
+                        Origem ↕
+                    </th>
+                    <th class="px-4 py-3 text-left font-medium text-gray-700 cursor-pointer hover:text-blue-600">
+                        DR ↕
+                    </th>
+                    <th class="px-4 py-3 text-left font-medium text-gray-700 cursor-pointer hover:text-blue-600">
+                        Escola ↕
+                    </th>
+                    <th class="px-4 py-3 text-left font-medium text-gray-700 cursor-pointer hover:text-blue-600">
+                        Curso ↕
+                    </th>
+                    <th class="px-4 py-3 text-left font-medium text-gray-700">
+                        Docentes responsáveis
+                    </th>
+                    <th class="px-4 py-3 text-left font-medium text-gray-700 cursor-pointer hover:text-blue-600">
+                        Alunos ↕
+                    </th>
+                    <th class="px-4 py-3 text-center font-medium text-gray-700">
+                        Ações
+                    </th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200">
+                <tr *ngIf="filteredTurmas.length === 0">
+                    <td colspan="9" class="px-4 py-8 text-center text-gray-400">
+                        Nenhuma turma encontrada.
+                    </td>
+                </tr>
+
+                <tr *ngFor="let turma of filteredTurmas" class="hover:bg-gray-50 transition">
+                    <td class="px-4 py-3">
+                        <input type="checkbox" class="rounded" />
+                    </td>
+                    <td class="px-4 py-3 font-medium text-gray-900">
+                        {{ turma.name || '—' }}
+                    </td>
+                    <td class="px-4 py-3 text-gray-700">
+                        {{ turma.origem || 'SIAC' }}
+                    </td>
+                    <td class="px-4 py-3 text-gray-700">
+                        {{ turma.operationalUnit?.regionalDepartment?.name || '—' }}
+                    </td>
+                    <td class="px-4 py-3 text-gray-700">
+                        {{ turma.operationalUnit?.name || '—' }}
+                    </td>
+                    <td class="px-4 py-3 text-gray-700">
+                        {{ turma.course?.name || '—' }}
+                    </td>
+                    <td class="px-4 py-3 text-gray-700">
+                        {{ turma.docente_responsavel || '—' }}
+                    </td>
+                    <td class="px-4 py-3 text-gray-700 text-center">
+                        {{ turma.users?.length || 0 }}
+                    </td>
+                    <td class="px-4 py-3">
+                        <div class="flex items-center justify-center gap-2">
+                            <!-- Editar -->
+                            <button (click)="abrirModalEditar(turma)" class="p-1 hover:bg-blue-100 rounded transition"
+                                title="Editar turma">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                    stroke-width="1.5" stroke="currentColor" class="w-5 h-5 text-blue-600">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
+                                </svg>
+                            </button>
+
+                            <!-- Visualizar (placeholder) -->
+                            <button class="p-1 hover:bg-gray-100 rounded transition" title="Ver detalhes">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                    stroke-width="1.5" stroke="currentColor" class="w-5 h-5 text-gray-600">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                </svg>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- MODAL -->
+<div *ngIf="isModalOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
+    (click.self)="fecharModal()" tabindex="-1" (keydown.escape)="fecharModal()">
+    <div class="flex w-full max-w-2xl flex-col rounded-lg bg-white shadow-xl max-h-[90vh]">
+
+        <!-- HEADER -->
+        <div class="border-b p-4">
+            <h2 class="text-lg font-semibold text-gray-800">
+                {{ isEditing ? 'Editar Turma' : 'Nova Turma' }}
+            </h2>
+            <p class="text-gray-600 text-sm">Preencha os dados da turma.</p>
+        </div>
+
+        <!-- CONTENT -->
+        <div class="flex-1 overflow-y-auto p-4">
+            <div class="space-y-4">
+                <!-- Nome da Turma -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Nome da Turma *</label>
+                    <input type="text" [(ngModel)]="turmaForm.name" required placeholder="Ex: TEC-I-000135/2022"
+                        class="w-full rounded-md border-gray-300 shadow-sm px-3 py-2 text-sm focus:border-blue-500 focus:ring-blue-500" />
+                    <p *ngIf="fieldErrors?.name" class="text-xs text-red-600 mt-1">{{ fieldErrors.name[0] }}</p>
+                </div>
+
+                <!-- Grid com 2 colunas -->
+                <div class="grid grid-cols-2 gap-4">
+                    <!-- Curso -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Curso *</label>
+                        <select [(ngModel)]="turmaForm.course_id"
+                            class="w-full rounded-md border-gray-300 shadow-sm px-3 py-2 text-sm focus:border-blue-500 focus:ring-blue-500">
+                            <option [ngValue]="null">Selecione o curso</option>
+                            <option *ngFor="let curso of cursos" [ngValue]="curso.id">{{ curso.name }}</option>
+                        </select>
+                        <p *ngIf="fieldErrors?.course_id" class="text-xs text-red-600 mt-1">{{ fieldErrors.course_id[0]
+                            }}</p>
+                    </div>
+
+                    <!-- Unidade Operacional -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Escola *</label>
+                        <select [(ngModel)]="turmaForm.operational_unit_id"
+                            class="w-full rounded-md border-gray-300 shadow-sm px-3 py-2 text-sm focus:border-blue-500 focus:ring-blue-500">
+                            <option [ngValue]="null">Selecione a escola</option>
+                            <option *ngFor="let uo of operationalUnits" [ngValue]="uo.id">{{ uo.name }}</option>
+                        </select>
+                        <p *ngIf="fieldErrors?.operational_unit_id" class="text-xs text-red-600 mt-1">{{
+                            fieldErrors.operational_unit_id[0] }}</p>
+                    </div>
+                </div>
+
+                <!-- Mensagens -->
+                <div *ngIf="errorMessage" class="p-3 rounded-md bg-red-50 text-red-700 text-sm">
+                    {{ errorMessage }}
+                </div>
+                <div *ngIf="successMessage" class="p-3 rounded-md bg-green-50 text-green-700 text-sm">
+                    {{ successMessage }}
+                </div>
+            </div>
+        </div>
+
+        <!-- FOOTER -->
+        <div class="flex justify-between border-t bg-gray-50 p-4">
+            <button (click)="fecharModal()"
+                class="rounded-md px-4 py-2 font-medium text-gray-700 hover:bg-gray-200 transition">
+                Cancelar
+            </button>
+
+            <button (click)="salvarTurma()" [disabled]="isLoading"
+                class="rounded-md bg-blue-600 px-5 py-2 font-medium text-white shadow hover:bg-blue-700 disabled:opacity-50 transition">
+                <span *ngIf="!isLoading">{{ isEditing ? 'Atualizar' : 'Criar' }}</span>
+                <span *ngIf="isLoading">Salvando...</span>
+            </button>
+        </div>
+
+    </div>
+</div>

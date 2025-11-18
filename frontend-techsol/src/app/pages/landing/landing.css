@@ -1,0 +1,11 @@
+/* Estilos customizados se necessário */
+
+/* Animação suave para scroll */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Animação para o FAQ */
+.rotate-180 {
+  transform: rotate(180deg);
+}

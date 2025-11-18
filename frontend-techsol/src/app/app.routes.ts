@@ -5,10 +5,18 @@ import { ProfileSelector } from './pages/auth/profile-selector/profile-selector'
 import { AppLayoutComponent } from './layouts/app/app';
 import { Invites } from './pages/app/invites/invites';
 import { Panel } from './pages/app/panel/panel';
-import { Users } from './pages/app/users/users';
+import { Turmas } from './pages/app/turmas/turmas';
 import { authGuard } from './services/auth-guard';
+import { Landing } from './pages/landing/landing';
 
 export const routes: Routes = [
+  // Landing page (home)
+  { 
+    path: '', 
+    component: Landing 
+  },
+  
+  // Rotas de autenticação
   {
     path: 'auth',
     component: AuthLayoutComponent,
@@ -18,6 +26,8 @@ export const routes: Routes = [
       { path: '', redirectTo: 'login', pathMatch: 'full' }
     ]
   },
+  
+  // Rotas da aplicação (protegidas)
   {
     path: 'app',
     component: AppLayoutComponent,
@@ -25,6 +35,7 @@ export const routes: Routes = [
     children: [
       { path: 'invites', component: Invites },
       { path: 'dashboard', component: Panel },
+      { path: 'turmas', component: Turmas },
       {
         path: 'users',
         loadComponent: () =>
@@ -33,5 +44,7 @@ export const routes: Routes = [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
     ]
   },
-  { path: '', redirectTo: 'auth', pathMatch: 'full' },
+  
+  // Redireciona qualquer rota não encontrada para a landing page
+  { path: '**', redirectTo: '', pathMatch: 'full' }
 ];

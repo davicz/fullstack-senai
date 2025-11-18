@@ -1,0 +1,443 @@
+<div class="min-h-screen bg-linear-to-b from-blue-50 to-white">
+    <!-- Header -->
+    <header class="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-200">
+        <div class="container mx-auto px-4">
+            <div class="flex items-center justify-between h-16">
+                <!-- Logo -->
+                <div class="flex items-center space-x-2">
+                    <img src="../../../assets/logo-tech.png" alt="Logo" class="h-10">
+                </div>
+
+                <!-- Navigation -->
+                <nav class="hidden md:flex items-center space-x-8">
+                    <button (click)="scrollToSection('about')"
+                        class="text-gray-700 hover:text-blue-600 transition-colors">
+                        Sobre nós
+                    </button>
+                    <button (click)="scrollToSection('faq')"
+                        class="text-gray-700 hover:text-blue-600 transition-colors">
+                        Perguntas frequentes
+                    </button>
+                    <button (click)="scrollToSection('contact')"
+                        class="text-gray-700 hover:text-blue-600 transition-colors">
+                        Fale conosco
+                    </button>
+                </nav>
+
+                <!-- Actions -->
+                <div class="flex items-center space-x-4">
+                    <!-- Theme Toggle -->
+                    <button (click)="toggleTheme()" class="p-2 rounded-full hover:bg-gray-100 transition-colors">
+                        @if (isDarkMode()) {
+                        <svg class="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z">
+                            </path>
+                        </svg>
+                        } @else {
+                        <svg class="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z">
+                            </path>
+                        </svg>
+                        }
+                    </button>
+
+                    <!-- Login Button -->
+                    <button (click)="navigateToLogin()"
+                        class="px-6 py-2 bg-[#005A9C] text-white rounded-lg font-medium hover:bg-blue-800 transition-colors">
+                        Entrar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="container mx-auto px-4 py-20">
+        <div class="grid md:grid-cols-2 gap-12 items-center">
+            <!-- Left Content -->
+            <div>
+                <h1 class="text-5xl font-bold text-gray-900 leading-tight mb-6">
+                    Sistema de Avaliação de Competências
+                </h1>
+                <p class="text-xl text-gray-600 mb-8">
+                    Tenha acesso a uma poderosa ferramenta de avaliação educacional.
+                </p>
+                <button (click)="navigateToLogin()"
+                    class="px-8 py-3 bg-[#005A9C] text-white rounded-lg text-lg font-semibold hover:bg-blue-800 transition-colors shadow-lg">
+                    Acessar a Plataforma
+                </button>
+                <button (click)="scrollToSection('about')"
+                    class="mt-4 flex items-center text-blue-600 hover:text-blue-800 transition-colors">
+                    <span class="mr-2">Saiba mais</span>
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Right Image/Illustration -->
+            <div class="relative">
+                <div class="bg-linear-to-br from-blue-100 to-blue-50 rounded-3xl p-8 shadow-xl">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="bg-white rounded-xl p-4 shadow-md">
+                            <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mb-3">
+                                <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                            </div>
+                            <h3 class="font-semibold text-gray-800">Avaliações</h3>
+                            <p class="text-sm text-gray-600">Diagnósticas</p>
+                        </div>
+                        <div class="bg-white rounded-xl p-4 shadow-md">
+                            <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-3">
+                                <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z">
+                                    </path>
+                                </svg>
+                            </div>
+                            <h3 class="font-semibold text-gray-800">Relatórios</h3>
+                            <p class="text-sm text-gray-600">Detalhados</p>
+                        </div>
+                        <div class="bg-white rounded-xl p-4 shadow-md col-span-2">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-10 h-10 bg-purple-100 rounded-full"></div>
+                                <div class="flex-1">
+                                    <div class="h-2 bg-gray-200 rounded-full mb-2">
+                                        <div class="h-2 bg-purple-500 rounded-full" style="width: 75%"></div>
+                                    </div>
+                                    <p class="text-xs text-gray-600">Progresso do estudante</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Platform Info Section -->
+    <section id="about" class="bg-white py-20">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-12">
+                <p class="text-blue-600 font-semibold mb-2">Uma plataforma</p>
+                <h2 class="text-4xl font-bold text-gray-900 mb-4">
+                    Para diferentes públicos, com diversas funcionalidades
+                </h2>
+                <p class="text-gray-600 max-w-3xl mx-auto">
+                    Navegue em uma plataforma feita para auxiliar no aprendizado e acompanhamento da educação
+                    profissional, obtendo acesso a uma variedade de ferramentas de avaliação.
+                </p>
+            </div>
+
+            <!-- Profile Cards -->
+            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
+                <!-- Administradores -->
+                <div class="bg-white border-2 border-blue-500 rounded-xl p-6 hover:shadow-xl transition-shadow">
+                    <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
+                        <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z">
+                            </path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-2">Administradores</h3>
+                    <p class="text-gray-600 text-sm">
+                        Gerencie, coordene e acompanhe estudantes, docentes e relatórios.
+                    </p>
+                </div>
+
+                <!-- Coordenadores -->
+                <div
+                    class="bg-white border-2 border-gray-200 rounded-xl p-6 hover:shadow-xl transition-shadow hover:border-blue-300">
+                    <div class="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center mb-4">
+                        <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z">
+                            </path>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-2">Coordenadores</h3>
+                    <p class="text-gray-600 text-sm">
+                        Gerencie estrategicamente as avaliações de sua unidade educacional.
+                    </p>
+                </div>
+
+                <!-- Docentes -->
+                <div
+                    class="bg-white border-2 border-gray-200 rounded-xl p-6 hover:shadow-xl transition-shadow hover:border-blue-300">
+                    <div class="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center mb-4">
+                        <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253">
+                            </path>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-2">Docentes</h3>
+                    <p class="text-gray-600 text-sm">
+                        Aplique avaliações e defina estratégias baseadas em resultados.
+                    </p>
+                </div>
+
+                <!-- Alunos -->
+                <div
+                    class="bg-white border-2 border-gray-200 rounded-xl p-6 hover:shadow-xl transition-shadow hover:border-blue-300">
+                    <div class="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center mb-4">
+                        <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-2">Alunos</h3>
+                    <p class="text-gray-600 text-sm">
+                        Realize seu desempenho e realize atividades propostas. Em um ambiente intuitivo e fluído.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Features Section -->
+            <div class="bg-linear-to-r from-blue-600 to-blue-800 rounded-3xl overflow-hidden">
+                <div class="grid md:grid-cols-2 gap-8 items-center">
+                    <!-- Left Side - Features -->
+                    <div class="p-12 text-white">
+                        <div class="space-y-6">
+                            <!-- Feature 1 -->
+                            <div class="flex items-start space-x-4">
+                                <div class="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center shrink-0">
+                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h3 class="text-xl font-bold mb-2">Avaliação Diagnóstica</h3>
+                                    <p class="text-blue-100">
+                                        Realize avaliações utilizando o método de distribuição de itens desenvolvido
+                                        especificamente para esta modalidade de avaliação. Nossa tecnologia adapta a
+                                        dificuldade conforme o desempenho do aluno, oferecendo uma avaliação mais
+                                        precisa e eficiente.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <!-- Feature 2 -->
+                            <div class="flex items-start space-x-4">
+                                <div class="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center shrink-0">
+                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z">
+                                        </path>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h3 class="text-xl font-bold mb-2">Avaliação Formativa</h3>
+                                    <p class="text-blue-100">
+                                        Acompanhe o progresso contínuo dos estudantes através de avaliações formativas
+                                        que fornecem feedback imediato e personalizado.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <!-- Feature 3 -->
+                            <div class="flex items-start space-x-4">
+                                <div class="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center shrink-0">
+                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z">
+                                        </path>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h3 class="text-xl font-bold mb-2">Avaliações SAEP</h3>
+                                    <p class="text-blue-100">
+                                        Sistema de Avaliação da Educação Profissional com métricas e relatórios
+                                        completos.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Side - Illustration -->
+                    <div class="h-full bg-white/10 p-8 hidden md:flex items-center justify-center">
+                        <div class="w-full max-w-md">
+                            <div class="bg-white rounded-xl p-6 shadow-2xl">
+                                <div class="space-y-4">
+                                    <div class="flex items-center justify-between">
+                                        <div class="flex space-x-2">
+                                            <div class="w-3 h-3 rounded-full bg-red-400"></div>
+                                            <div class="w-3 h-3 rounded-full bg-yellow-400"></div>
+                                            <div class="w-3 h-3 rounded-full bg-green-400"></div>
+                                        </div>
+                                    </div>
+                                    <div class="space-y-3">
+                                        <div class="h-4 bg-gray-200 rounded w-3/4"></div>
+                                        <div class="h-4 bg-gray-200 rounded w-full"></div>
+                                        <div class="h-4 bg-gray-200 rounded w-5/6"></div>
+                                        <div
+                                            class="h-32 bg-linear-to-br from-blue-100 to-blue-50 rounded-lg flex items-center justify-center">
+                                            <svg class="w-16 h-16 text-blue-400" fill="none" stroke="currentColor"
+                                                viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z">
+                                                </path>
+                                            </svg>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ Section -->
+    <section id="faq" class="py-20 bg-gray-50">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-12">
+                <h2 class="text-4xl font-bold text-gray-900 mb-4">Perguntas frequentes</h2>
+                <p class="text-gray-600">Tudo que você precisa saber sobre a plataforma</p>
+            </div>
+
+            <div class="max-w-3xl mx-auto">
+                <div class="grid md:grid-cols-3 gap-4 mb-8">
+                    <button
+                        class="p-4 bg-white rounded-lg text-left hover:shadow-md transition-shadow border-2 border-blue-500">
+                        <div class="flex items-center space-x-3">
+                            <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                            </svg>
+                            <span class="font-semibold text-gray-900">Como obtenho acesso ao SIAC?</span>
+                        </div>
+                    </button>
+                    <button class="p-4 bg-white rounded-lg text-left hover:shadow-md transition-shadow">
+                        <div class="flex items-center space-x-3">
+                            <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z">
+                                </path>
+                            </svg>
+                            <span class="font-semibold text-gray-900">Como recuperar minha conta?</span>
+                        </div>
+                    </button>
+                    <button class="p-4 bg-white rounded-lg text-left hover:shadow-md transition-shadow">
+                        <div class="flex items-center space-x-3">
+                            <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636">
+                                </path>
+                            </svg>
+                            <span class="font-semibold text-gray-900">Minha conta foi bloqueada</span>
+                        </div>
+                    </button>
+                </div>
+
+                <div class="space-y-4">
+                    @for (faq of faqs; track $index) {
+                    <div class="bg-white rounded-lg border-2" [class.border-blue-500]="openFaqIndex() === $index"
+                        [class.border-gray-200]="openFaqIndex() !== $index">
+                        <button (click)="toggleFaq($index)"
+                            class="w-full p-6 text-left flex items-center justify-between hover:bg-gray-50 transition-colors">
+                            <span class="font-semibold text-gray-900">{{ faq.question }}</span>
+                            <svg class="w-5 h-5 text-gray-600 transition-transform"
+                                [class.rotate-180]="openFaqIndex() === $index" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </button>
+                        @if (openFaqIndex() === $index) {
+                        <div class="px-6 pb-6">
+                            <p class="text-gray-600">{{ faq.answer }}</p>
+                        </div>
+                        }
+                    </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="py-20 bg-linear-to-br from-blue-600 to-blue-800">
+        <div class="container mx-auto px-4">
+            <div class="max-w-2xl mx-auto text-center text-white">
+                <div class="mb-8">
+                    <div class="flex justify-center mb-4">
+                        <div class="flex -space-x-2">
+                            <div class="w-12 h-12 rounded-full bg-white/20 border-2 border-white"></div>
+                            <div class="w-12 h-12 rounded-full bg-white/20 border-2 border-white"></div>
+                            <div class="w-12 h-12 rounded-full bg-white/20 border-2 border-white"></div>
+                        </div>
+                    </div>
+                    <h2 class="text-4xl font-bold mb-4">Não encontrou sua resposta?</h2>
+                    <p class="text-blue-100 text-lg mb-8">
+                        Entre em contato com nossa equipe de suporte e teremos Ihe ajudar a solucionar o caso.
+                    </p>
+                </div>
+
+                <div class="bg-white/10 backdrop-blur-sm rounded-lg p-6 inline-block">
+                    <a href="mailto:sieble_siac@senai.br"
+                        class="text-xl font-semibold hover:text-blue-200 transition-colors">
+                        sieble_siac@senai.br
+                    </a>
+                </div>
+
+                <p class="mt-8 text-sm text-blue-100">
+                    "Para uma resolução eficiente do seu ticket de suporte ou eventuais erros, ou seu login, horário,
+                    informações sobre a resolução, além de anexar um print da plataforma"
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-12">
+        <div class="container mx-auto px-4">
+            <div class="grid md:grid-cols-4 gap-8">
+                <div>
+                    <img src="../../../assets/logo-tech.png" alt="Logo" class="h-10 mb-4 brightness-0 invert">
+                    <p class="text-gray-400 text-sm">
+                        Sistema de Avaliação de Competências
+                    </p>
+                </div>
+                <div>
+                    <h3 class="font-semibold mb-4">Plataforma</h3>
+                    <ul class="space-y-2 text-gray-400 text-sm">
+                        <li><a href="#" class="hover:text-white transition-colors">Sobre nós</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">Funcionalidades</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">Documentação</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="font-semibold mb-4">Suporte</h3>
+                    <ul class="space-y-2 text-gray-400 text-sm">
+                        <li><a href="#" class="hover:text-white transition-colors">Central de Ajuda</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">Perguntas Frequentes</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">Contato</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="font-semibold mb-4">Legal</h3>
+                    <ul class="space-y-2 text-gray-400 text-sm">
+                        <li><a href="#" class="hover:text-white transition-colors">Termos de Uso</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">Política de Privacidade</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400 text-sm">
+                <p>&copy; 2024 SIAC - Sistema de Avaliação de Competências. Todos os direitos reservados.</p>
+            </div>
+        </div>
+    </footer>
+</div>

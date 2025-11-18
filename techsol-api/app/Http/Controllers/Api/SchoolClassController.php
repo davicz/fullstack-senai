@@ -54,8 +54,14 @@ class SchoolClassController extends Controller
 
         $validatedData = $request->validate([
             'name' => 'required|string|max:255',
+            'codigo' => 'required|string|max:255|unique:classes,codigo',
+            'turno' => 'required|in:manha,tarde,noite,integral',
+            'origem' => 'nullable|string|max:255',
             'course_id' => 'required|exists:courses,id',
             'operational_unit_id' => 'required|exists:operational_units,id',
+            'regional_department_id' => 'required|exists:regional_departments,id',
+            'docente_responsavel' => 'nullable|string|max:255',
+            'quantidade_alunos' => 'nullable|integer|min:0'
         ]);
 
         // Lógica de permissão para criação
