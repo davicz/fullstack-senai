@@ -78,4 +78,8 @@ Route::middleware('auth:sanctum')->group(function () {
         ['id'=>2,'name'=>'IMPORTADO'],
         ['id'=>3,'name'=>'OUTRO SISTEMA'],
     ]);
+
+    Route::post('/classes/{schoolClass}/teachers', [SchoolClassController::class, 'storeTeacher']);
+    Route::post('/classes/{schoolClass}/students', [SchoolClassUserController::class, 'store']);
+
 });

@@ -2,20 +2,25 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class OperationalUnit extends Model
 {
     use HasFactory;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
-     */
     protected $fillable = [
         'name',
-        'regional_department_id',
+        'regional_department_id'
     ];
+
+    public function regionalDepartment()
+    {
+        return $this->belongsTo(RegionalDepartment::class);
+    }
+
+    public function classes()
+    {
+        return $this->hasMany(SchoolClass::class);
+    }
 }

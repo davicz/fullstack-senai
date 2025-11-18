@@ -11,48 +11,67 @@ export class TurmaService {
 
   constructor(private http: HttpClient) {}
 
-  // GET /turmas - Lista todas as turmas
+  // LISTAR TURMAS (GET /classes)
   getTurmas(): Observable<any> {
-    return this.http.get(`${this.apiBase}/turmas`);
+    return this.http.get(`${this.apiBase}/classes`);
   }
 
-  // GET /turmas/{id} - Busca uma turma específica
+  // BUSCAR UMA TURMA (GET /classes/{id})
   getTurma(id: number): Observable<any> {
-    return this.http.get(`${this.apiBase}/turmas/${id}`);
+    return this.http.get(`${this.apiBase}/classes/${id}`);
   }
 
-  // POST /turmas - Cria uma nova turma
+  // CRIAR TURMA (POST /classes)
   createTurma(payload: any): Observable<any> {
-    return this.http.post(`${this.apiBase}/turmas`, payload);
+    return this.http.post(`${this.apiBase}/classes`, payload);
   }
 
-  // PUT /turmas/{id} - Atualiza uma turma
+  // ATUALIZAR TURMA (PUT /classes/{id})
   updateTurma(id: number, payload: any): Observable<any> {
-    return this.http.put(`${this.apiBase}/turmas/${id}`, payload);
+    return this.http.put(`${this.apiBase}/classes/${id}`, payload);
   }
 
-  // DELETE /turmas/{id} - Exclui uma turma
+  // EXCLUIR TURMA (DELETE /classes/{id})
   deleteTurma(id: number): Observable<any> {
-    return this.http.delete(`${this.apiBase}/turmas/${id}`);
+    return this.http.delete(`${this.apiBase}/classes/${id}`);
   }
 
-  // GET /origens - Lista as origens disponíveis
+  // ADICIONAR PROFESSOR À TURMA
+  addTeachers(classId: number, teacherIds: number[]): Observable<any> {
+    return this.http.post(`${this.apiBase}/classes/${classId}/teachers`, {
+      teacher_ids: teacherIds
+    });
+  }
+
+  // ADICIONAR ALUNOS À TURMA
+  addStudents(classId: number, studentIds: number[]): Observable<any> {
+    return this.http.post(`${this.apiBase}/classes/${classId}/users`, {
+      user_ids: studentIds
+    });
+  }
+
+  // LISTAR ORIGENS
   getOrigens(): Observable<any> {
     return this.http.get(`${this.apiBase}/origens`);
   }
 
-  // GET /regional-departments - Lista os departamentos regionais
+  // (Opcional) LISTAR TURNOS DA API – se quiser usar no futuro
+  getTurnos(): Observable<any> {
+    return this.http.get(`${this.apiBase}/turnos`);
+  }
+
+  // LISTAR DEPARTAMENTOS REGIONAIS
   getRegionalDepartments(): Observable<any> {
     return this.http.get(`${this.apiBase}/regional-departments`);
   }
 
-  // GET /operational-units - Lista as unidades operacionais
+  // LISTAR UNIDADES OPERACIONAIS
   getOperationalUnits(): Observable<any> {
     return this.http.get(`${this.apiBase}/operational-units`);
   }
 
-  // GET /cursos - Lista os cursos disponíveis
+  // LISTAR CURSOS
   getCursos(): Observable<any> {
-    return this.http.get(`${this.apiBase}/cursos`);
+    return this.http.get(`${this.apiBase}/courses`);
   }
 }

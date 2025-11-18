@@ -11,11 +11,9 @@ return new class extends Migration
      */
     public function up(): void
 {
-    Schema::table('users', function (Blueprint $table) {
-        $table->date('date_of_birth')->nullable()->after('cpf');
-        $table->string('gender')->nullable()->after('date_of_birth');
-        $table->string('special_needs')->nullable()->after('gender');
-    });
+    // Esta migration já foi aplicada no banco atual,
+    // mas o Laravel marcou como "pending".
+    // Para evitar duplicação de campos, deixamos o método vazio.
 }
 
     /**

@@ -9,8 +9,8 @@ import { Subscription } from 'rxjs';
   selector: 'app-turmas',
   standalone: true,
   imports: [CommonModule, FormsModule],
-  templateUrl: 'turmas.html',
-  styleUrl: 'turmas.css',
+  templateUrl: './turmas.html',
+  styleUrl: './turmas.css',
 })
 export class Turmas implements OnInit, OnDestroy {
   // Lista de turmas
@@ -21,7 +21,7 @@ export class Turmas implements OnInit, OnDestroy {
 
   // Filtros
   filtroTurma = '';
-  filtroOrigem: number | null = null;
+  filtroOrigem: string | null = null;
   filtroTurno = '';
   filtroDR: number | null = null;
   filtroEscola = '';
@@ -29,8 +29,8 @@ export class Turmas implements OnInit, OnDestroy {
   filtroDocente = '';
   filtroAluno = '';
 
-  // Listas para dropdowns
-  origens: Array<{ id: number; name: string }> = [];
+  // Listas auxiliares
+  origens: Array<{ id: any; name: string }> = [];
   turnos: Array<{ id: string; name: string }> = [
     { id: 'manha', name: 'Manhã' },
     { id: 'tarde', name: 'Tarde' },
@@ -38,23 +38,26 @@ export class Turmas implements OnInit, OnDestroy {
     { id: 'integral', name: 'Integral' }
   ];
   regionalDepartments: Array<{ id: number; name: string }> = [];
+  operationalUnits: Array<{ id: number; name: string; regional_department_id?: number | null }> = [];
+  cursos: Array<{ id: number; name: string }> = [];
 
   // Modal
   isModalOpen = false;
   isEditing = false;
   currentTurmaId: number | null = null;
 
-  // Form data
-  turmaForm = {
-    codigo: '',
-    origem_id: null as number | null,
-    turno: '',
-    regional_department_id: null as number | null,
-    operational_unit_id: null as number | null,
-    curso_id: null as number | null,
-    docente_responsavel: '',
-    quantidade_alunos: 0
-  };
+  // Form (espelhando o backend)
+  turmaForm: {
+    name: string;
+    codigo: string;
+    origem: string;
+    turno: string;
+    course_id: number | null;
+    operational_unit_id: number | null;
+    regional_department_id: number | null;
+    docente_responsavel: string;
+    quantidade_alunos: number;
+  } = this.createEmptyForm();
 
   // Feedback
   isLoading = false;
@@ -71,10 +74,29 @@ export class Turmas implements OnInit, OnDestroy {
     this.loadTurmas();
     this.loadOrigens();
     this.loadRegionalDepartments();
+    this.loadOperationalUnits();
+    this.loadCursos();
   }
 
   ngOnDestroy(): void {
     this.subs.forEach(s => s.unsubscribe());
+  }
+
+  // -------------------------
+  // Helpers de form
+  // -------------------------
+  private createEmptyForm() {
+    return {
+      name: '',
+      codigo: '',
+      origem: 'SIAC',
+      turno: '',
+      course_id: null,
+      operational_unit_id: null,
+      regional_department_id: null,
+      docente_responsavel: '',
+      quantidade_alunos: 0
+    };
   }
 
   // -------------------------
@@ -86,12 +108,12 @@ export class Turmas implements OnInit, OnDestroy {
 
     const sub = this.turmaService.getTurmas().subscribe({
       next: (resp) => {
-        const data = resp?.data ?? resp;
-        if (Array.isArray(data)) {
-          this.turmas = data;
-        } else {
+        const data = Array.isArray(resp?.data) ? resp.data : (Array.isArray(resp) ? resp : []);
+        if (!Array.isArray(data)) {
           console.warn('Resposta de turmas inesperada', resp);
           this.turmas = [];
+        } else {
+          this.turmas = data;
         }
         this.filteredTurmas = [...this.turmas];
         this.isListLoading = false;
@@ -108,7 +130,7 @@ export class Turmas implements OnInit, OnDestroy {
   loadOrigens(): void {
     const sub = this.turmaService.getOrigens().subscribe({
       next: (resp) => {
-        const data = resp?.data ?? resp;
+        const data = Array.isArray(resp?.data) ? resp.data : (Array.isArray(resp) ? resp : []);
         if (Array.isArray(data)) {
           this.origens = data;
         }
@@ -121,12 +143,38 @@ export class Turmas implements OnInit, OnDestroy {
   loadRegionalDepartments(): void {
     const sub = this.turmaService.getRegionalDepartments().subscribe({
       next: (resp) => {
-        const data = resp?.data ?? resp;
+        const data = Array.isArray(resp?.data) ? resp.data : (Array.isArray(resp) ? resp : []);
         if (Array.isArray(data)) {
           this.regionalDepartments = data;
         }
       },
       error: (err) => console.warn('Erro ao carregar regionais', err)
+    });
+    this.subs.push(sub);
+  }
+
+  loadOperationalUnits(): void {
+    const sub = this.turmaService.getOperationalUnits().subscribe({
+      next: (resp) => {
+        const data = Array.isArray(resp?.data) ? resp.data : (Array.isArray(resp) ? resp : []);
+        if (Array.isArray(data)) {
+          this.operationalUnits = data;
+        }
+      },
+      error: (err) => console.warn('Erro ao carregar unidades operacionais', err)
+    });
+    this.subs.push(sub);
+  }
+
+  loadCursos(): void {
+    const sub = this.turmaService.getCursos().subscribe({
+      next: (resp) => {
+        const data = Array.isArray(resp?.data) ? resp.data : (Array.isArray(resp) ? resp : []);
+        if (Array.isArray(data)) {
+          this.cursos = data;
+        }
+      },
+      error: (err) => console.warn('Erro ao carregar cursos', err)
     });
     this.subs.push(sub);
   }
@@ -137,51 +185,67 @@ export class Turmas implements OnInit, OnDestroy {
   aplicarFiltros(): void {
     let resultado = [...this.turmas];
 
+    // Turma (nome/código)
     if (this.filtroTurma.trim()) {
       const termo = this.filtroTurma.toLowerCase();
-      resultado = resultado.filter(t => 
-        t.codigo?.toLowerCase().includes(termo)
+      resultado = resultado.filter(t =>
+        (t.name || '').toLowerCase().includes(termo) ||
+        (t.codigo || '').toLowerCase().includes(termo)
       );
     }
 
+    // Origem
     if (this.filtroOrigem) {
-      resultado = resultado.filter(t => t.origem_id === this.filtroOrigem);
+      const termo = this.filtroOrigem.toLowerCase();
+      resultado = resultado.filter(t =>
+        (t.origem || '').toLowerCase() === termo
+      );
     }
 
+    // Turno
     if (this.filtroTurno) {
-      resultado = resultado.filter(t => t.turno === this.filtroTurno);
+      resultado = resultado.filter(t => (t.turno || '') === this.filtroTurno);
     }
 
+    // DR
     if (this.filtroDR) {
-      resultado = resultado.filter(t => t.regional_department_id === this.filtroDR);
+      resultado = resultado.filter(t => {
+        const drId = t.regional_department_id ?? t.operational_unit?.regional_department_id ?? null;
+        return drId === this.filtroDR;
+      });
     }
 
+    // Escola
     if (this.filtroEscola.trim()) {
       const termo = this.filtroEscola.toLowerCase();
-      resultado = resultado.filter(t => 
-        t.escola?.toLowerCase().includes(termo)
+      resultado = resultado.filter(t =>
+        (t.operational_unit?.name || '').toLowerCase().includes(termo)
       );
     }
 
+    // Curso
     if (this.filtroCurso.trim()) {
       const termo = this.filtroCurso.toLowerCase();
-      resultado = resultado.filter(t => 
-        t.curso?.toLowerCase().includes(termo)
+      resultado = resultado.filter(t =>
+        (t.course?.name || '').toLowerCase().includes(termo)
       );
     }
 
+    // Docente
     if (this.filtroDocente.trim()) {
       const termo = this.filtroDocente.toLowerCase();
-      resultado = resultado.filter(t => 
-        t.docente_responsavel?.toLowerCase().includes(termo)
+      resultado = resultado.filter(t =>
+        this.getTeacherNames(t).toLowerCase().includes(termo)
       );
     }
 
+    // Alunos (quantidade)
     if (this.filtroAluno.trim()) {
       const termo = this.filtroAluno.toLowerCase();
-      resultado = resultado.filter(t => 
-        t.quantidade_alunos?.toString().includes(termo)
-      );
+      resultado = resultado.filter(t => {
+        const qtd = this.getStudentsCount(t);
+        return qtd.toString().includes(termo);
+      });
     }
 
     this.filteredTurmas = resultado;
@@ -206,42 +270,38 @@ export class Turmas implements OnInit, OnDestroy {
     this.isModalOpen = true;
     this.isEditing = false;
     this.currentTurmaId = null;
-    this.resetForm();
+    this.turmaForm = this.createEmptyForm();
+    this.errorMessage = null;
+    this.fieldErrors = null;
+    this.successMessage = null;
   }
 
   abrirModalEditar(turma: any): void {
     this.isModalOpen = true;
     this.isEditing = true;
     this.currentTurmaId = turma.id;
-    
+
     this.turmaForm = {
-      codigo: turma.codigo || '',
-      origem_id: turma.origem_id || null,
+      name: turma.name || '',
+      codigo: turma.codigo || turma.name || '',
+      origem: turma.origem || 'SIAC',
       turno: turma.turno || '',
-      regional_department_id: turma.regional_department_id || null,
-      operational_unit_id: turma.operational_unit_id || null,
-      curso_id: turma.curso_id || null,
+      course_id: turma.course_id || (turma.course?.id ?? null),
+      operational_unit_id: turma.operational_unit_id || (turma.operational_unit?.id ?? null),
+      regional_department_id:
+        turma.regional_department_id ?? turma.operational_unit?.regional_department_id ?? null,
       docente_responsavel: turma.docente_responsavel || '',
-      quantidade_alunos: turma.quantidade_alunos || 0
+      quantidade_alunos: turma.quantidade_alunos ?? this.getStudentsCount(turma),
     };
+
+    this.errorMessage = null;
+    this.fieldErrors = null;
+    this.successMessage = null;
   }
 
   fecharModal(): void {
     this.isModalOpen = false;
-    this.resetForm();
-  }
-
-  resetForm(): void {
-    this.turmaForm = {
-      codigo: '',
-      origem_id: null,
-      turno: '',
-      regional_department_id: null,
-      operational_unit_id: null,
-      curso_id: null,
-      docente_responsavel: '',
-      quantidade_alunos: 0
-    };
+    this.turmaForm = this.createEmptyForm();
     this.errorMessage = null;
     this.fieldErrors = null;
     this.successMessage = null;
@@ -258,19 +318,38 @@ export class Turmas implements OnInit, OnDestroy {
     }
   }
 
+  private buildPayloadFromForm() {
+    // DR derivado da UO caso não tenha vindo explícito
+    const regionalFromUO = this.getRegionalFromUO(this.turmaForm.operational_unit_id);
+
+    return {
+      name: this.turmaForm.name,
+      codigo: this.turmaForm.codigo || this.turmaForm.name,
+      origem: this.turmaForm.origem || 'SIAC',
+      turno: this.turmaForm.turno || 'manha',
+      course_id: this.turmaForm.course_id,
+      operational_unit_id: this.turmaForm.operational_unit_id,
+      regional_department_id: this.turmaForm.regional_department_id || regionalFromUO,
+      docente_responsavel: this.turmaForm.docente_responsavel || null,
+      quantidade_alunos: this.turmaForm.quantidade_alunos ?? 0
+    };
+  }
+
   criarTurma(): void {
     this.isLoading = true;
     this.errorMessage = null;
     this.fieldErrors = null;
 
-    const sub = this.turmaService.createTurma(this.turmaForm).subscribe({
+    const payload = this.buildPayloadFromForm();
+
+    const sub = this.turmaService.createTurma(payload).subscribe({
       next: () => {
         this.isLoading = false;
         this.successMessage = 'Turma criada com sucesso!';
         setTimeout(() => {
           this.fecharModal();
           this.loadTurmas();
-        }, 1000);
+        }, 800);
       },
       error: (err) => {
         this.isLoading = false;
@@ -288,14 +367,16 @@ export class Turmas implements OnInit, OnDestroy {
     this.errorMessage = null;
     this.fieldErrors = null;
 
-    const sub = this.turmaService.updateTurma(this.currentTurmaId, this.turmaForm).subscribe({
+    const payload = this.buildPayloadFromForm();
+
+    const sub = this.turmaService.updateTurma(this.currentTurmaId, payload).subscribe({
       next: () => {
         this.isLoading = false;
         this.successMessage = 'Turma atualizada com sucesso!';
         setTimeout(() => {
           this.fecharModal();
           this.loadTurmas();
-        }, 1000);
+        }, 800);
       },
       error: (err) => {
         this.isLoading = false;
@@ -323,12 +404,12 @@ export class Turmas implements OnInit, OnDestroy {
   }
 
   // -------------------------
-  // Helpers
+  // Helpers de UI
   // -------------------------
-  getOrigemNome(id: number | null): string {
-    if (!id) return '—';
-    const origem = this.origens.find(o => o.id === id);
-    return origem ? origem.name : '—';
+  getOrigemNome(origem: string | null | undefined): string {
+    if (!origem) return '—';
+    const found = this.origens.find(o => o.name.toLowerCase() === origem.toLowerCase());
+    return found ? found.name : origem;
   }
 
   getRegionalNome(id: number | null): string {
@@ -340,5 +421,25 @@ export class Turmas implements OnInit, OnDestroy {
   getTurnoNome(turno: string): string {
     const t = this.turnos.find(x => x.id === turno);
     return t ? t.name : turno;
+  }
+
+  getTeacherNames(turma: any): string {
+    if (Array.isArray(turma.teachers) && turma.teachers.length) {
+      return turma.teachers.map((t: any) => t.name).join(', ');
+    }
+    return turma.docente_responsavel || '—';
+  }
+
+  getStudentsCount(turma: any): number {
+    if (Array.isArray(turma.students)) {
+      return turma.students.length;
+    }
+    return turma.quantidade_alunos ?? 0;
+  }
+
+  private getRegionalFromUO(uoId: number | null): number | null {
+    if (!uoId) return null;
+    const uo = this.operationalUnits.find(u => u.id === uoId);
+    return uo?.regional_department_id ?? null;
   }
 }

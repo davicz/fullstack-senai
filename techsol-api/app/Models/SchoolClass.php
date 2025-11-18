@@ -33,7 +33,22 @@ class SchoolClass extends Model
         return $this->belongsTo(RegionalDepartment::class);
     }
 
-    public function users() {
-        return $this->belongsToMany(User::class, 'class_user');
+    public function teachers()
+    {
+        return $this->belongsToMany(User::class, 'class_user')
+                    ->withPivot('role')
+                    ->wherePivot('role', 'teacher');
+    }
+
+    public function students()
+    {
+        return $this->belongsToMany(User::class, 'class_user')
+                    ->withPivot('role')
+                    ->wherePivot('role', 'student');
+    }
+
+    public function users()
+    {
+        return $this->belongsToMany(User::class, 'class_user')->withPivot('role');
     }
 }
