@@ -1,70 +1,260 @@
-<div class="px-6 py-4">
-  <!-- Boas-vindas -->
-  <h1 class="text-2xl font-bold text-gray-800 mb-6">
-    Olá, {{ user?.name }} 👋
-  </h1>
+<div class="p-6 space-y-6">
 
-  <!-- Cards principais -->
-  <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-    <div *ngFor="let stat of stats"
-      class="flex items-center gap-4 rounded-lg bg-white p-4 shadow hover:shadow-md transition">
+  <!-- TÍTULO -->
+  <div>
+    <h1 class="text-2xl font-bold text-gray-800">Painel de Monitoramento</h1>
+  </div>
 
-      <div class="text-3xl">{{ stat.icon }}</div>
+  <!-- STATUS CARDS (DADOS GERAIS) -->
+  <div>
+    <h2 class="text-sm font-bold text-gray-800 mb-3">Dados Gerais de Conclusão</h2>
+    <div class="flex flex-wrap gap-3">
 
-      <div>
-        <p class="text-sm text-gray-600">{{ stat.label }}</p>
-        <p class="text-xl font-bold text-gray-800">{{ stat.value }}</p>
+      <!-- Card Verde -->
+      <div class="flex items-center bg-teal-50 border border-teal-100 rounded-full px-4 py-1 shadow-sm">
+        <span class="flex h-4 w-4 items-center justify-center rounded-full bg-teal-500 text-white text-xs mr-2">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-3 h-3">
+            <path fill-rule="evenodd"
+              d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z"
+              clip-rule="evenodd" />
+          </svg>
+        </span>
+        <span class="text-sm font-semibold text-teal-700">0 Finalizados</span>
       </div>
+
+      <!-- Card Azul -->
+      <div class="flex items-center bg-blue-50 border border-blue-100 rounded-full px-4 py-1 shadow-sm">
+        <span class="flex h-4 w-4 items-center justify-center rounded-full bg-blue-400 text-white text-xs mr-2">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-3 h-3">
+            <path fill-rule="evenodd"
+              d="M10 18a8 8 0 100-16 8 8 0 000 16zm.75-13a.75.75 0 00-1.5 0v5c0 .414.336.75.75.75h4a.75.75 0 000-1.5h-3.25V5z"
+              clip-rule="evenodd" />
+          </svg>
+        </span>
+        <span class="text-sm font-semibold text-blue-700">2 Aguardando</span>
+      </div>
+
+      <!-- Card Vermelho (Atrasados) -->
+      <div class="flex items-center bg-red-50 border border-red-100 rounded-full px-4 py-1 shadow-sm">
+        <span class="flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-white text-xs mr-2">!</span>
+        <span class="text-sm font-semibold text-red-700">148 Atrasados</span>
+      </div>
+
+      <!-- Card Vermelho Escuro (Desistentes) -->
+      <div class="flex items-center bg-red-50 border border-red-100 rounded-full px-4 py-1 shadow-sm">
+        <span class="flex h-4 w-4 items-center justify-center rounded-full bg-red-600 text-white text-xs mr-2">x</span>
+        <span class="text-sm font-semibold text-red-800">22 Desistentes</span>
+      </div>
+
     </div>
   </div>
 
-  <!-- Gráficos -->
-  <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
+  <!-- FILTROS -->
+  <div class="bg-white p-5 rounded-lg shadow-sm border border-gray-100">
+    <div class="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-8 gap-4 mb-4">
 
-    <!-- Evolução mensal -->
-    <div class="bg-white rounded-lg shadow p-4">
-      <h2 class="text-sm font-semibold mb-3 text-gray-700">Evolução Mensal</h2>
-      <div class="h-64">
-        <canvas baseChart [type]="'line'" [data]="lineChartData" [options]="lineChartOptions">
-        </canvas>
+      <div class="col-span-1">
+        <label class="block text-xs font-medium text-gray-500 mb-1">DR:</label>
+        <select
+          class="w-full border-gray-300 rounded-md text-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-50 border p-2">
+          <option>Regional</option>
+        </select>
       </div>
+
+      <div class="col-span-1 lg:col-span-2">
+        <label class="block text-xs font-medium text-gray-500 mb-1">Escola:</label>
+        <input type="text" placeholder="Nome da escola"
+          class="w-full border-gray-300 rounded-md text-sm bg-gray-50 border p-2">
+      </div>
+
+      <div class="col-span-1 lg:col-span-2">
+        <label class="block text-xs font-medium text-gray-500 mb-1">Nome:</label>
+        <input type="text" placeholder="Nome do aluno"
+          class="w-full border-gray-300 rounded-md text-sm bg-gray-50 border p-2">
+      </div>
+
+      <div class="col-span-1">
+        <label class="block text-xs font-medium text-gray-500 mb-1">CPF:</label>
+        <input type="text" placeholder="CPF do aluno"
+          class="w-full border-gray-300 rounded-md text-sm bg-gray-50 border p-2">
+      </div>
+
+      <div class="col-span-1 lg:col-span-2">
+        <label class="block text-xs font-medium text-gray-500 mb-1">Curso:</label>
+        <select class="w-full border-gray-300 rounded-md text-sm bg-gray-50 border p-2">
+          <option>Curso avaliado</option>
+        </select>
+      </div>
+
+      <div class="col-span-1 lg:col-span-2">
+        <label class="block text-xs font-medium text-gray-500 mb-1">Status atual:</label>
+        <select class="w-full border-gray-300 rounded-md text-sm bg-gray-50 border p-2">
+          <option>Status atual do f...</option>
+        </select>
+      </div>
+
+      <div class="col-span-1">
+        <label class="block text-xs font-medium text-gray-500 mb-1">Data inicial:</label>
+        <input type="date" class="w-full border-gray-300 rounded-md text-sm bg-gray-50 border p-2 text-gray-400">
+      </div>
+
+      <div class="col-span-1">
+        <label class="block text-xs font-medium text-gray-500 mb-1">Data final:</label>
+        <input type="date" class="w-full border-gray-300 rounded-md text-sm bg-gray-50 border p-2 text-gray-400">
+      </div>
+
     </div>
 
-    <!-- Distribuição por perfil -->
-    <div class="bg-white rounded-lg shadow p-4">
-      <h2 class="text-sm font-semibold mb-3 text-gray-700">Distribuição por Perfil</h2>
-      <div class="h-64">
-        <canvas baseChart [type]="'doughnut'" [data]="doughnutData" [options]="doughnutOptions">
-        </canvas>
-      </div>
+    <div class="flex gap-2">
+      <button
+        class="bg-[#0094d8] hover:bg-blue-600 text-white px-6 py-1.5 rounded-full text-sm font-medium shadow-sm transition-colors">
+        Filtrar
+      </button>
+      <button
+        class="bg-white border border-[#0094d8] text-[#0094d8] hover:bg-blue-50 px-6 py-1.5 rounded-full text-sm font-medium shadow-sm transition-colors">
+        Limpar
+      </button>
     </div>
-
-    <!-- Escolas por região -->
-    <div class="bg-white rounded-lg shadow p-4">
-      <h2 class="text-sm font-semibold mb-3 text-gray-700">Escolas por Região</h2>
-      <div class="h-64">
-        <canvas baseChart [type]="'bar'" [data]="barChartData" [options]="barChartOptions">
-        </canvas>
-      </div>
-    </div>
-
   </div>
 
-  <!-- Acessos rápidos -->
-  <h2 class="text-lg font-semibold text-gray-800 mb-3">Acessos rápidos</h2>
-
-  <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-
-    <a *ngFor="let sc of shortcuts" [routerLink]="sc.route"
-      class="flex flex-col items-center justify-center gap-3 rounded-lg bg-white p-6 shadow hover:shadow-lg transition cursor-pointer">
-
-      <div class="text-3xl">{{ sc.icon }}</div>
-
-      <p class="text-base font-medium text-gray-700">
-        {{ sc.label }}
+  <!-- RESULTADOS E TABELA -->
+  <div>
+    <div class="flex justify-between items-center mb-2">
+      <p class="text-blue-600 font-bold text-sm">
+        <span class="text-[#0094d8]">172</span> alunos listados.
       </p>
-    </a>
+      <div class="flex gap-2">
+        <button
+          class="flex items-center gap-1 bg-gray-200 text-gray-400 px-3 py-1 rounded text-xs font-bold cursor-not-allowed">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-3 h-3">
+            <path d="M3 4a2 2 0 00-2 2v1.161l8.441 4.221a1.25 1.25 0 001.118 0L19 7.162V6a2 2 0 00-2-2H3z" />
+            <path d="M19 8.839l-7.77 3.885a2.75 2.75 0 01-2.46 0L1 8.839V14a2 2 0 002 2h14a2 2 0 002-2V8.839z" />
+          </svg>
+          lembrete
+        </button>
+        <button class="bg-gray-200 text-gray-500 p-1.5 rounded hover:bg-gray-300">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4">
+            <path fill-rule="evenodd"
+              d="M8.75 1A2.75 2.75 0 006 3.75v.443c-.795.077-1.584.176-2.365.298a.75.75 0 10.23 1.482l.149-.022.841 10.518A2.75 2.75 0 007.596 19h4.807a2.75 2.75 0 002.742-2.53l.841-10.52.149.023a.75.75 0 00.23-1.482A41.03 41.03 0 0014 4.193V3.75A2.75 2.75 0 0011.25 1h-2.5zM10 4c.84 0 1.673.025 2.5.075V3.75c0-.69-.56-1.25-1.25-1.25h-2.5c-.69 0-1.25.56-1.25 1.25v.325C8.327 4.025 9.16 4 10 4zM8.58 7.72a.75.75 0 00-1.5.06l.3 7.5a.75.75 0 101.5-.06l-.3-7.5zm4.34.06a.75.75 0 10-1.5-.06l-.3 7.5a.75.75 0 101.5.06l.3-7.5z"
+              clip-rule="evenodd" />
+          </svg>
+        </button>
+      </div>
+    </div>
 
+    <div class="overflow-x-auto bg-white rounded-lg shadow-sm border border-gray-200">
+      <table class="w-full text-left text-xs">
+        <thead class="bg-white border-b border-gray-200">
+          <tr>
+            <th class="p-3 w-4"><input type="checkbox" class="rounded border-gray-300"></th>
+            <th class="p-3 font-bold text-gray-700">DR <span class="ml-1 text-gray-400">▼</span></th>
+            <th class="p-3 font-bold text-gray-700">Escola <span class="ml-1 text-gray-400">▼</span></th>
+            <th class="p-3 font-bold text-gray-700">Aluno <span class="ml-1 text-gray-400">▼</span></th>
+            <th class="p-3 font-bold text-gray-700">Curso Avaliado <span class="ml-1 text-gray-400">▼</span></th>
+
+            <!-- Colunas de Status (Timeline) -->
+            <th class="p-3 font-bold text-gray-700 text-center">Cadastro Realizado <span
+                class="ml-1 text-gray-400">▼</span></th>
+            <th class="p-3 font-bold text-gray-700 text-center">Avaliação Realizada <span
+                class="ml-1 text-gray-400">▼</span></th>
+            <th class="p-3 font-bold text-gray-700 text-center">Matriculado <span class="ml-1 text-gray-400">▼</span>
+            </th>
+            <th class="p-3 font-bold text-gray-700 text-center">Avaliação de <br>conclusão enviada <span
+                class="ml-1 text-gray-400">▼</span></th>
+            <th class="p-3 font-bold text-gray-700 text-center">Avaliação de <br>conclusão realizada <span
+                class="ml-1 text-gray-400">▼</span></th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-100">
+
+          <!-- LOOP DE ALUNOS -->
+          <tr *ngFor="let student of students" class="hover:bg-gray-50 transition-colors">
+            <td class="p-3 align-top pt-4"><input type="checkbox" class="rounded border-gray-300"></td>
+
+            <td class="p-3 align-top pt-4 font-medium text-gray-600">{{ student.dr }}</td>
+
+            <td class="p-3 align-top pt-4 text-gray-600 max-w-[150px]">{{ student.escola }}</td>
+
+            <td class="p-3 align-top pt-4">
+              <p class="font-bold text-gray-800 uppercase text-xs">{{ student.nome }}</p>
+              <p class="text-[10px] font-bold text-gray-500">{{ student.cpf }}</p>
+            </td>
+
+            <td class="p-3 align-top pt-4 text-gray-600 max-w-[150px]">{{ student.curso }}</td>
+
+            <!-- TIMELINE STATUS 1: Cadastro -->
+            <td class="p-0 align-top relative h-full">
+              <div class="flex flex-col items-center h-full pt-4 pb-4">
+                <span class="text-[10px] mb-2 text-gray-600 font-medium">{{ student.status_cadastro_data || 'Desistente'
+                  }}</span>
+
+                <!-- Bolinha e Linha -->
+                <div class="relative w-full flex items-center justify-center">
+                  <div class="h-0.5 bg-gray-200 w-1/2 absolute right-0 top-1/2"></div> <!-- Linha direita -->
+                  <div class="w-3 h-3 rounded-full z-10" [ngClass]="getStatusColor(student.status_cadastro)">
+                  </div>
+                </div>
+              </div>
+            </td>
+
+            <!-- TIMELINE STATUS 2: Avaliação -->
+            <td class="p-0 align-top relative h-full">
+              <div class="flex flex-col items-center h-full pt-4 pb-4">
+                <span class="text-[10px] mb-2 text-gray-600 font-medium">{{ student.status_avaliacao_label }}</span>
+
+                <div class="relative w-full flex items-center justify-center">
+                  <div class="h-0.5 bg-gray-200 w-full absolute top-1/2"></div> <!-- Linha passante -->
+                  <div class="w-3 h-3 rounded-full z-10" [ngClass]="getStatusColor(student.status_avaliacao)">
+                  </div>
+                </div>
+              </div>
+            </td>
+
+            <!-- TIMELINE STATUS 3: Matriculado -->
+            <td class="p-0 align-top relative h-full">
+              <div class="flex flex-col items-center h-full pt-4 pb-4">
+                <span class="text-[10px] mb-2 text-gray-600 font-medium">{{ student.status_matricula_label }}</span>
+
+                <div class="relative w-full flex items-center justify-center">
+                  <div class="h-0.5 bg-gray-200 w-full absolute top-1/2"></div>
+                  <div class="w-3 h-3 rounded-full z-10" [ngClass]="getStatusColor(student.status_matricula)">
+                  </div>
+                </div>
+              </div>
+            </td>
+
+            <!-- TIMELINE STATUS 4: Conclusão Enviada -->
+            <td class="p-0 align-top relative h-full">
+              <div class="flex flex-col items-center h-full pt-4 pb-4">
+                <span class="text-[10px] mb-2 text-gray-600 font-medium">{{ student.status_envio_label }}</span>
+
+                <div class="relative w-full flex items-center justify-center">
+                  <div class="h-0.5 bg-gray-200 w-full absolute top-1/2"></div>
+                  <div class="w-3 h-3 rounded-full z-10" [ngClass]="getStatusColor(student.status_envio)">
+                  </div>
+                </div>
+              </div>
+            </td>
+
+            <!-- TIMELINE STATUS 5: Conclusão Realizada -->
+            <td class="p-0 align-top relative h-full">
+              <div class="flex flex-col items-center h-full pt-4 pb-4">
+                <span class="text-[10px] mb-2 text-gray-600 font-medium">{{ student.status_conclusao_label }}</span>
+
+                <div class="relative w-full flex items-center justify-center">
+                  <div class="h-0.5 bg-gray-200 w-1/2 absolute left-0 top-1/2"></div> <!-- Linha esquerda -->
+                  <div class="w-3 h-3 rounded-full z-10" [ngClass]="getStatusColor(student.status_conclusao)">
+                  </div>
+                </div>
+              </div>
+            </td>
+
+          </tr>
+
+        </tbody>
+      </table>
+    </div>
+
+    <div class="mt-2 text-[10px] text-gray-400 pl-2">Versão: 2.0.1-homolog</div>
   </div>
-
 </div>

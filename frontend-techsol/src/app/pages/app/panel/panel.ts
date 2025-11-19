@@ -1,143 +1,136 @@
-// src/app/pages/app/panel/panel.ts
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
-
-import { BaseChartDirective } from 'ng2-charts';
-import { Chart, registerables, ChartData, ChartOptions, ChartType } from 'chart.js';
-
-// 🔥 Registro obrigatório do Chart.js 4
-Chart.register(...registerables);
 
 @Component({
   selector: 'app-panel',
   standalone: true,
-  imports: [CommonModule, RouterModule, BaseChartDirective],
+  imports: [CommonModule],
   templateUrl: './panel.html',
-  styleUrl: './panel.css',
 })
-export class Panel implements OnInit {
+export class Panel {
 
-  user: any = null;
-  roleSlug = '';
-
-  stats: Array<{ label: string; value: number; icon: string; color: string }> = [];
-  shortcuts: Array<{ label: string; route: string; icon: string }> = [];
-
-  // -------------------------
-  // LINE CHART
-  // -------------------------
-  lineChartType: ChartType = 'line';
-  lineChartData: ChartData<'line'> = {
-    labels: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun'],
-    datasets: [
-      {
-        data: [50, 120, 180, 240, 300, 420],
-        label: 'Usuários cadastrados',
-        fill: true,
-        tension: 0.35,
-        borderWidth: 2,
-        borderColor: '#2563eb',
-        backgroundColor: 'rgba(37,99,235,0.25)',
-        pointBackgroundColor: '#1d4ed8',
-        pointRadius: 4
-      }
-    ]
-  };
-
-  lineChartOptions: ChartOptions<'line'> = {
-    responsive: true,
-    maintainAspectRatio: false
-  };
-
-  // -------------------------
-  // DOUGHNUT
-  // -------------------------
-  doughnutType: ChartType = 'doughnut';
-  doughnutData: ChartData<'doughnut'> = {
-  labels: ['SENAI', 'DRs', 'Unidades', 'Docentes', 'Alunos'],
-  datasets: [
+  // Mock de dados baseado no Print
+  students = [
     {
-      label: 'Quantidade',
-      data: [2, 10, 80, 260, 1400],
-      backgroundColor: [
-        '#2563eb',
-        '#16a34a',
-        '#ca8a04',
-        '#9333ea',
-        '#dc2626'
-      ]
+      dr: 'TO',
+      escola: 'CFP-Paraiso-Centro de Formação Profissional',
+      nome: 'SILVANO DE JESUS SOARES DOS SANTOS',
+      cpf: '873.322.721-72',
+      curso: 'Técnico em Refrigeração e Climatização',
+      
+      // Status: success, warning, error
+      status_cadastro_data: '29/06/2021 às 17:36',
+      status_cadastro: 'success',
+
+      status_avaliacao_label: 'Desistente',
+      status_avaliacao: 'error',
+
+      status_matricula_label: 'Desistente',
+      status_matricula: 'error',
+
+      status_envio_label: 'Desistente',
+      status_envio: 'error',
+
+      status_conclusao_label: 'Desistente',
+      status_conclusao: 'error',
+    },
+    {
+      dr: 'PE',
+      escola: 'Escola Técnica SENAI Araripina',
+      nome: 'Lívia Lima Oliveira Andrade',
+      cpf: '130.178.334-02',
+      curso: 'Modelista de Calçados',
+      
+      status_cadastro_data: '09/09/2022 às 21:48',
+      status_cadastro: 'success',
+
+      status_avaliacao_label: 'Atrasado',
+      status_avaliacao: 'error', // No print aparece vermelho (atrasado)
+
+      status_matricula_label: 'Atrasado',
+      status_matricula: 'error',
+
+      status_envio_label: 'Atrasado',
+      status_envio: 'error',
+
+      status_conclusao_label: 'Atrasado',
+      status_conclusao: 'error',
+    },
+    {
+        dr: 'PE',
+        escola: 'Escola Técnica SENAI Araripina',
+        nome: 'Lucas de Jesus Da Silva Pereira',
+        cpf: '083.537.304-56',
+        curso: 'Modelista de Calçados',
+        
+        status_cadastro_data: '09/09/2022 às 21:57',
+        status_cadastro: 'success',
+  
+        status_avaliacao_label: 'Atrasado',
+        status_avaliacao: 'error',
+  
+        status_matricula_label: 'Atrasado',
+        status_matricula: 'error',
+  
+        status_envio_label: 'Atrasado',
+        status_envio: 'error',
+  
+        status_conclusao_label: 'Atrasado',
+        status_conclusao: 'error',
+    },
+    {
+        dr: 'PE',
+        escola: 'Escola Técnica SENAI Araripina',
+        nome: 'Fernando de Sousa Modesto',
+        cpf: '289.231.138-16',
+        curso: 'MECÂNICO DE MÁQUINAS INDUSTRIAIS',
+        
+        status_cadastro_data: '09/09/2022 às 22:59',
+        status_cadastro: 'success',
+  
+        status_avaliacao_label: 'Atrasado',
+        status_avaliacao: 'error',
+  
+        status_matricula_label: 'Atrasado',
+        status_matricula: 'error',
+  
+        status_envio_label: 'Atrasado',
+        status_envio: 'error',
+  
+        status_conclusao_label: 'Atrasado',
+        status_conclusao: 'error',
+    },
+    {
+        dr: 'PE',
+        escola: 'Escola Técnica SENAI Araripina',
+        nome: 'Fernando de Sousa Modesto',
+        cpf: '289.231.138-16',
+        curso: 'ELETRICISTA INDUSTRIAL',
+        
+        status_cadastro_data: '09/09/2022 às 22:59',
+        status_cadastro: 'success',
+  
+        status_avaliacao_label: 'Atrasado',
+        status_avaliacao: 'error',
+  
+        status_matricula_label: 'Atrasado',
+        status_matricula: 'error',
+  
+        status_envio_label: 'Atrasado',
+        status_envio: 'error',
+  
+        status_conclusao_label: 'Atrasado',
+        status_conclusao: 'error',
     }
-  ]
-  };
+  ];
 
-  doughnutOptions: ChartOptions<'doughnut'> = {
-  responsive: true,
-  maintainAspectRatio: false,
-  plugins: {
-    legend: { display: false }
-  }
-};
-
-  // -------------------------
-  // BAR
-  // -------------------------
-  barChartType: ChartType = 'bar';
-  barChartData: ChartData<'bar'> = {
-    labels: ['AL', 'PE', 'PB', 'BA', 'SE'],
-    datasets: [
-      {
-        label: 'Unidades Operacionais',
-        data: [8, 12, 5, 10, 3],
-        backgroundColor: '#0ea5e9',
-        borderRadius: 6
-      }
-    ]
-  };
-
-  barChartOptions: ChartOptions<'bar'> = {
-    responsive: true,
-    maintainAspectRatio: false,
-    scales: {
-      x: { grid: { display: false } },
-      y: { beginAtZero: true }
-    }
-  };
-
-  ngOnInit(): void {
-    this.loadUser();
-    this.loadDashboardData();
-  }
-
-  private loadUser() {
-    try {
-      const raw = localStorage.getItem('siac_user');
-      if (raw) {
-        this.user = JSON.parse(raw);
-        this.roleSlug =
-          this.user?.selected_role?.slug ||
-          this.user?.roles?.[0]?.slug ||
-          '';
-      }
-    } catch {
-      this.user = null;
+  getStatusColor(status: string): string {
+    switch(status) {
+        case 'success': return 'bg-green-500 border-2 border-white shadow'; // Verde
+        case 'error': return 'bg-red-500 border-2 border-white shadow';   // Vermelho (Desistente/Atrasado)
+        case 'warning': return 'bg-blue-400 border-2 border-white shadow'; // Azul (Aguardando)
+        default: return 'bg-gray-300';
     }
   }
 
-  private loadDashboardData() {
-    if (!this.roleSlug) return;
-
-    if (this.roleSlug === 'national_admin') {
-      this.stats = [
-        { label: 'Departamentos Regionais', value: 27, icon: '🏢', color: 'blue' },
-        { label: 'Unidades Operacionais', value: 550, icon: '🏫', color: 'green' },
-        { label: 'Usuários', value: 12000, icon: '👥', color: 'purple' },
-      ];
-
-      this.shortcuts = [
-        { label: 'Gerenciar Usuários', route: '/app/users', icon: '👥' },
-        { label: 'Criar Convite', route: '/app/invites', icon: '✉️' },
-      ];
-    }
-  }
 }
