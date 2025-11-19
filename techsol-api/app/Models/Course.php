@@ -9,12 +9,36 @@ class Course extends Model
 {
     use HasFactory;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
-     */
     protected $fillable = [
         'name',
+        'code',
+        'description',
+        'workload',
+        'level',
+        'area',
+        'is_active',
     ];
+
+    protected $casts = [
+        'workload' => 'integer',
+        'is_active' => 'boolean',
+    ];
+
+    /**
+     * Relação: Um curso tem múltiplas competências
+     */
+    public function competencies()
+    {
+        return $this->belongsToMany(Competency::class, 'course_competency')
+            ->withPivot('weight', 'semester')
+            ->withTimestamps();
+    }
+
+    /**
+     * Relação: Um curso tem múltiplas turmas
+     */
+    public function classes()
+    {
+        return $this->hasMany(SchoolClass::class);
+    }
 }

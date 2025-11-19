@@ -8,6 +8,8 @@ import { Panel } from './pages/app/panel/panel';
 import { Turmas } from './pages/app/turmas/turmas';
 import { authGuard } from './services/auth-guard';
 import { Landing } from './pages/landing/landing';
+import { TurmaDetalhes } from './pages/app/turmas/turma-detalhes';
+import { Users } from './pages/app/users/users';
 
 export const routes: Routes = [
   // Landing page (home)
@@ -26,21 +28,16 @@ export const routes: Routes = [
       { path: '', redirectTo: 'login', pathMatch: 'full' }
     ]
   },
-  
-  // Rotas da aplicação (protegidas)
   {
     path: 'app',
     component: AppLayoutComponent,
     canActivate: [authGuard],
     children: [
-      { path: 'invites', component: Invites },
       { path: 'dashboard', component: Panel },
+      { path: 'invites', component: Invites },
+      { path: 'users', component: Users },
       { path: 'turmas', component: Turmas },
-      {
-        path: 'users',
-        loadComponent: () =>
-          import('./pages/app/users/users').then(m => m.Users),
-      },
+      { path: 'turmas/:id', component: TurmaDetalhes },
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
     ]
   },

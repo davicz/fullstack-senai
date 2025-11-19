@@ -4,74 +4,68 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\SchoolClass;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class SchoolClassController extends Controller
 {
     /**
-     * Listagem com hierarquia completa.
+     * Monta a query base com todos os relacionamentos necessários.
+     */
+    protected function queryWithRelations()
+    {
+        return SchoolClass::with([
+            'course',
+            'operationalUnit.regionalDepartment',
+            'teachers.roles',
+            'students.roles',
+        ])->orderBy('name');
+    }
+
+    /**
+     * Lista as turmas com base nas permissões do usuário.
      */
     public function index()
     {
-        $user = Auth::user()->load([
-            'roles',
-            'regionalDepartment',
-            'regionalDepartment.operationalUnits'
-        ]);
+        $user = Auth::user()->load('roles');
 
-        // NATIONAL ADMIN → vê tudo
+        $query = $this->queryWithRelations();
+
+        // Admin Nacional vê todas as turmas de todas as UOs
         if ($user->roles->contains('slug', 'national_admin')) {
-            return SchoolClass::with([
-                'course',
-                'operationalUnit',
-                'operationalUnit.regionalDepartment',
-                'teachers',
-                'students'
-            ])->orderBy('name')->get();
+            return $query->get();
         }
 
-        // REGIONAL ADMIN → vê UOs do seu DR
+        // Admin Regional vê todas as turmas das UOs do seu DR
         if ($user->roles->contains('slug', 'regional_admin')) {
-            $unitIds = $user->regionalDepartment->operationalUnits->pluck('id');
+            $unitIds = $user->regionalDepartment
+                ? $user->regionalDepartment->operationalUnits()->pluck('id')
+                : [];
 
-            return SchoolClass::with([
-                'course',
-                'operationalUnit',
-                'operationalUnit.regionalDepartment',
-                'teachers',
-                'students'
-            ])
+            return $query
                 ->whereIn('operational_unit_id', $unitIds)
-                ->orderBy('name')
                 ->get();
         }
 
-        // UNIT ADMIN → vê somente da própria UO
+        // Admin de Unidade vê apenas as turmas da sua UO
         if ($user->roles->contains('slug', 'unit_admin')) {
-            return SchoolClass::with([
-                'course',
-                'operationalUnit',
-                'operationalUnit.regionalDepartment',
-                'teachers',
-                'students'
-            ])
+            return $query
                 ->where('operational_unit_id', $user->operational_unit_id)
-                ->orderBy('name')
                 ->get();
         }
 
-        // TEACHER → vê apenas suas próprias turmas
+        // Docente vê apenas turmas onde leciona
         if ($user->roles->contains('slug', 'teacher')) {
-            return $user->classes()
-                ->with([
-                    'course',
-                    'operationalUnit',
-                    'operationalUnit.regionalDepartment',
-                    'teachers',
-                    'students'
-                ])
-                ->orderBy('name')
+            return $query
+                ->whereHas('teachers', fn($q) => $q->where('users.id', $user->id))
+                ->get();
+        }
+
+        // Aluno vê apenas turmas onde está matriculado
+        if ($user->roles->contains('slug', 'student')) {
+            return $query
+                ->whereHas('students', fn($q) => $q->where('users.id', $user->id))
                 ->get();
         }
 
@@ -79,148 +73,243 @@ class SchoolClassController extends Controller
     }
 
     /**
-     * Criar turma.
+     * Verifica se o usuário pode gerenciar (CRUD) uma turma.
+     */
+    protected function canManageClass(SchoolClass $schoolClass, User $user): bool
+    {
+        // Admin nacional pode tudo
+        if ($user->roles->contains('slug', 'national_admin')) {
+            return true;
+        }
+
+        // Admin regional: só UOs do seu DR
+        if ($user->roles->contains('slug', 'regional_admin')) {
+            return $user->regionalDepartment &&
+                $user->regionalDepartment->operationalUnits()
+                    ->where('id', $schoolClass->operational_unit_id)
+                    ->exists();
+        }
+
+        // Admin de unidade: só na sua UO
+        if ($user->roles->contains('slug', 'unit_admin')) {
+            return (int) $user->operational_unit_id === (int) $schoolClass->operational_unit_id;
+        }
+
+        return false;
+    }
+
+    /**
+     * Verifica se o usuário pode visualizar uma turma.
+     */
+    protected function canViewClass(SchoolClass $schoolClass, User $user): bool
+    {
+        // Se pode gerenciar, pode ver
+        if ($this->canManageClass($schoolClass, $user)) {
+            return true;
+        }
+
+        // Docente da turma
+        if ($user->roles->contains('slug', 'teacher')) {
+            return $schoolClass->teachers()
+                ->where('users.id', $user->id)
+                ->exists();
+        }
+
+        // Aluno da turma
+        if ($user->roles->contains('slug', 'student')) {
+            return $schoolClass->students()
+                ->where('users.id', $user->id)
+                ->exists();
+        }
+
+        return false;
+    }
+
+    /**
+     * Cria uma nova turma.
      */
     public function store(Request $request)
     {
-        $user = Auth::user()->load(['roles', 'regionalDepartment']);
+        $user = Auth::user()->load('roles');
 
-        if (!$user->roles->contains(fn($r) => str_contains($r->slug, 'admin'))) {
+        // Apenas perfis admin podem criar turmas
+        if (!$user->roles->contains(fn($role) => str_contains($role->slug, 'admin'))) {
             return response()->json(['message' => 'Acesso não autorizado.'], 403);
         }
 
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'codigo' => 'required|string|max:255|unique:classes,codigo',
-            'turno' => 'required|in:manha,tarde,noite,integral',
-            'origem' => 'nullable|string|max:255',
-            'course_id' => 'required|exists:courses,id',
-            'operational_unit_id' => 'required|exists:operational_units,id',
-            'regional_department_id' => 'required|exists:regional_departments,id',
-            'docente_responsavel' => 'nullable|string|max:255',
-            'quantidade_alunos' => 'nullable|integer|min:0',
-
-            // Professores enviados junto com a criação
-            'docente_ids' => 'array',
-            'docente_ids.*' => 'exists:users,id'
+            'name'                   => 'required|string|max:255',
+            'codigo'                 => 'nullable|string|max:255|unique:classes,codigo',
+            'turno'                  => 'required|in:manha,tarde,noite,integral',
+            'origem'                 => 'nullable|string|max:255',
+            'course_id'              => 'required|exists:courses,id',
+            'operational_unit_id'    => 'required|exists:operational_units,id',
+            'regional_department_id' => 'nullable|exists:regional_departments,id',
         ]);
 
-        // Validação hierárquica
-        if ($user->roles->contains('slug', 'regional_admin')) {
-            if (!$user->regionalDepartment->operationalUnits()
-                ->where('id', $validated['operational_unit_id'])
-                ->exists()
-            ) {
-                return response()->json([
-                    'message' => 'Permissão para criar turmas apenas em UOs do seu DR.'
-                ], 403);
+        // Deduz DR pela UO, se não vier
+        if (empty($validated['regional_department_id'])) {
+            $uo = \App\Models\OperationalUnit::find($validated['operational_unit_id']);
+            if ($uo) {
+                $validated['regional_department_id'] = $uo->regional_department_id;
             }
         }
 
-        if ($user->roles->contains('slug', 'unit_admin')) {
-            if ($validated['operational_unit_id'] != $user->operational_unit_id) {
-                return response()->json([
-                    'message' => 'Permissão para criar turmas apenas na sua própria UO.'
-                ], 403);
-            }
+        // Checa escopo (usa um model "temporário")
+        $tmp = new SchoolClass($validated);
+        if (!$this->canManageClass($tmp, $user)) {
+            return response()->json([
+                'message' => 'Permissão negada para criar turma neste contexto.',
+            ], 403);
+        }
+
+        // Se não informar código, usa o próprio nome
+        if (empty($validated['codigo'])) {
+            $validated['codigo'] = $validated['name'];
         }
 
         $schoolClass = SchoolClass::create($validated);
 
-        // Associar professores caso enviados
-        if ($request->has('docente_ids')) {
-            $schoolClass->users()->syncWithoutDetaching(
-                collect($request->docente_ids)
-                    ->mapWithKeys(fn($id) => [$id => ['role' => 'teacher']])
-                    ->toArray()
-            );
-        }
+        // Carrega com relacionamentos
+        $schoolClass = $this->queryWithRelations()->find($schoolClass->id);
 
-        return $schoolClass->load('teachers', 'students');
+        return response()->json($schoolClass, 201);
     }
 
     /**
-     * Atualizar turma.
+     * Mostra detalhes de uma turma.
      */
-    public function update(Request $request, SchoolClass $schoolClass)
+    public function show($id)
     {
         $user = Auth::user()->load('roles');
 
-        if (!$user->roles->contains(fn($r) => str_contains($r->slug, 'admin'))) {
+        // Busca SEM usar model binding, pra evitar qualquer zica
+        $schoolClass = $this->queryWithRelations()->findOrFail($id);
+
+        if (!$this->canViewClass($schoolClass, $user)) {
+            return response()->json(['message' => 'Acesso não autorizado.'], 403);
+        }
+
+        return response()->json($schoolClass);
+    }
+
+    /**
+     * Atualiza uma turma.
+     */
+    public function update(Request $request, $id)
+    {
+        $user = Auth::user()->load('roles');
+
+        // Primeiro busca a turma "crua"
+        $schoolClass = SchoolClass::findOrFail($id);
+
+        if (!$this->canManageClass($schoolClass, $user)) {
             return response()->json(['message' => 'Acesso não autorizado.'], 403);
         }
 
         $validated = $request->validate([
-            'name' => 'sometimes|string|max:255',
-            'codigo' => 'sometimes|string|max:255|unique:classes,codigo,' . $schoolClass->id,
-            'turno' => 'sometimes|in:manha,tarde,noite,integral',
-            'origem' => 'nullable|string|max:255',
-            'course_id' => 'sometimes|exists:courses,id',
-            'operational_unit_id' => 'sometimes|exists:operational_units,id',
-            'regional_department_id' => 'sometimes|exists:regional_departments,id',
-            'docente_responsavel' => 'nullable|string|max:255',
-            'quantidade_alunos' => 'nullable|integer|min:0',
-
-            'docente_ids' => 'array',
-            'docente_ids.*' => 'exists:users,id'
+            'name'                   => 'sometimes|required|string|max:255',
+            'codigo'                 => 'nullable|string|max:255|unique:classes,codigo,' . $schoolClass->id,
+            'turno'                  => 'sometimes|required|in:manha,tarde,noite,integral',
+            'origem'                 => 'nullable|string|max:255',
+            'course_id'              => 'sometimes|required|exists:courses,id',
+            'operational_unit_id'    => 'sometimes|required|exists:operational_units,id',
+            'regional_department_id' => 'nullable|exists:regional_departments,id',
         ]);
 
-        $schoolClass->update($validated);
-
-        // Atualizar professores
-        if ($request->has('docente_ids')) {
-            $schoolClass->users()->syncWithoutDetaching(
-                collect($request->docente_ids)
-                    ->mapWithKeys(fn($id) => [$id => ['role' => 'teacher']])
-                    ->toArray()
-            );
+        // Se mudou a UO e não veio DR, deduz
+        if (isset($validated['operational_unit_id']) && empty($validated['regional_department_id'])) {
+            $uo = \App\Models\OperationalUnit::find($validated['operational_unit_id']);
+            if ($uo) {
+                $validated['regional_department_id'] = $uo->regional_department_id;
+            }
         }
 
-        return $schoolClass->load('teachers', 'students');
+        // Se mandou 'codigo' vazio mas com 'name', usa o name
+        if (array_key_exists('codigo', $validated)
+            && empty($validated['codigo'])
+            && !empty($validated['name'] ?? null)
+        ) {
+            $validated['codigo'] = $validated['name'];
+        }
+
+        // Atualiza e salva
+        $schoolClass->fill($validated);
+        $schoolClass->save();
+
+        // Recarrega com todos os relacionamentos bonitinhos
+        $schoolClass = $this->queryWithRelations()->findOrFail($schoolClass->id);
+
+        return response()->json($schoolClass);
     }
 
     /**
-     * Remover turma.
+     * Remove uma turma.
      */
-    public function destroy(SchoolClass $schoolClass)
+    public function destroy($id)
     {
         $user = Auth::user()->load('roles');
+        $schoolClass = SchoolClass::findOrFail($id);
 
-        if (!$user->roles->contains(fn($r) => str_contains($r->slug, 'admin'))) {
+        if (!$this->canManageClass($schoolClass, $user)) {
             return response()->json(['message' => 'Acesso não autorizado.'], 403);
         }
 
-        $schoolClass->users()->detach();  
         $schoolClass->delete();
 
-        return response()->json(['message' => 'Turma removida com sucesso.']);
+        return response()->json(['message' => 'Turma excluída com sucesso.']);
     }
 
     /**
-     * Associar professores.
+     * Adiciona um ou mais professores à turma.
      */
     public function storeTeacher(Request $request, SchoolClass $schoolClass)
     {
-        $user = Auth::user()->load('roles');
+        $authUser = Auth::user()->load('roles');
 
-        if (!$user->roles->contains(fn($r) => str_contains($r->slug, 'admin'))) {
+        if (!$this->canManageClass($schoolClass, $authUser)) {
             return response()->json(['message' => 'Acesso não autorizado.'], 403);
         }
 
         $validated = $request->validate([
-            'teacher_ids' => 'required|array',
-            'teacher_ids.*' => 'exists:users,id'
+            'teacher_ids'   => 'required|array',
+            'teacher_ids.*' => 'exists:users,id',
         ]);
 
-        foreach ($validated['teacher_ids'] as $id) {
+        foreach ($validated['teacher_ids'] as $teacherId) {
             $schoolClass->users()->syncWithoutDetaching([
-                $id => ['role' => 'teacher']
+                $teacherId => ['role' => 'teacher'],
             ]);
         }
 
+        $schoolClass->load('teachers.roles');
+
         return response()->json([
-            'message' => 'Professores adicionados com sucesso!',
-            'teachers' => $schoolClass->teachers()->get()
+            'message'  => 'Professores adicionados com sucesso!',
+            'teachers' => $schoolClass->teachers,
+        ]);
+    }
+
+    /**
+     * Remove um professor da turma.
+     */
+    public function removeTeacher(SchoolClass $schoolClass, User $user)
+    {
+        $authUser = Auth::user()->load('roles');
+
+        if (!$this->canManageClass($schoolClass, $authUser)) {
+            return response()->json(['message' => 'Acesso não autorizado.'], 403);
+        }
+
+        $schoolClass->users()
+            ->wherePivot('role', 'teacher')
+            ->detach($user->id);
+
+        $schoolClass->load('teachers.roles');
+
+        return response()->json([
+            'message'  => 'Professor removido com sucesso.',
+            'teachers' => $schoolClass->teachers,
         ]);
     }
 }

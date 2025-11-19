@@ -40,8 +40,8 @@
             <label class="block text-xs font-medium text-gray-700 mb-1">Origem:</label>
             <select [(ngModel)]="filtroOrigem"
                 class="w-full rounded-md border px-3 py-1.5 text-sm focus:ring-blue-500 focus:border-blue-500">
-                <option [ngValue]="null">Origem</option>
-                <option *ngFor="let origem of origens" [ngValue]="origem.name">{{ origem.name }}</option>
+                <option value="">Origem</option>
+                <option *ngFor="let origem of origens" [value]="origem.name">{{ origem.name }}</option>
             </select>
         </div>
 
@@ -60,7 +60,7 @@
             <label class="block text-xs font-medium text-gray-700 mb-1">DR:</label>
             <select [(ngModel)]="filtroDR"
                 class="w-full rounded-md border px-3 py-1.5 text-sm focus:ring-blue-500 focus:border-blue-500">
-                <option [ngValue]="null">Departamento re...</option>
+                <option [ngValue]="null">Departamento regional</option>
                 <option *ngFor="let dr of regionalDepartments" [ngValue]="dr.id">{{ dr.name }}</option>
             </select>
         </div>
@@ -82,14 +82,14 @@
         <!-- Docente -->
         <div class="lg:col-span-1">
             <label class="block text-xs font-medium text-gray-700 mb-1">Docente:</label>
-            <input type="text" [(ngModel)]="filtroDocente" placeholder="Nome do responsável..."
+            <input type="text" [(ngModel)]="filtroDocente" placeholder="Nome do responsável"
                 class="w-full rounded-md border px-3 py-1.5 text-sm focus:ring-blue-500 focus:border-blue-500" />
         </div>
 
         <!-- Aluno -->
         <div class="lg:col-span-1">
             <label class="block text-xs font-medium text-gray-700 mb-1">Aluno:</label>
-            <input type="text" [(ngModel)]="filtroAluno" placeholder="Quantidade de alunos..."
+            <input type="text" [(ngModel)]="filtroAluno" placeholder="Quantidade de alunos"
                 class="w-full rounded-md border px-3 py-1.5 text-sm focus:ring-blue-500 focus:border-blue-500" />
         </div>
     </div>
@@ -135,25 +135,28 @@
                     <th class="px-4 py-3 text-left">
                         <input type="checkbox" class="rounded" />
                     </th>
-                    <th class="px-4 py-3 text-left font-medium text-gray-700 cursor-pointer hover:text-blue-600">
+                    <th class="px-4 py-3 text-left font-medium text-gray-700">
                         Turma ↕
                     </th>
-                    <th class="px-4 py-3 text-left font-medium text-gray-700 cursor-pointer hover:text-blue-600">
+                    <th class="px-4 py-3 text-left font-medium text-gray-700">
                         Origem ↕
                     </th>
-                    <th class="px-4 py-3 text-left font-medium text-gray-700 cursor-pointer hover:text-blue-600">
+                    <th class="px-4 py-3 text-left font-medium text-gray-700">
+                        Turno ↕
+                    </th>
+                    <th class="px-4 py-3 text-left font-medium text-gray-700">
                         DR ↕
                     </th>
-                    <th class="px-4 py-3 text-left font-medium text-gray-700 cursor-pointer hover:text-blue-600">
+                    <th class="px-4 py-3 text-left font-medium text-gray-700">
                         Escola ↕
                     </th>
-                    <th class="px-4 py-3 text-left font-medium text-gray-700 cursor-pointer hover:text-blue-600">
+                    <th class="px-4 py-3 text-left font-medium text-gray-700">
                         Curso ↕
                     </th>
                     <th class="px-4 py-3 text-left font-medium text-gray-700">
                         Docentes responsáveis
                     </th>
-                    <th class="px-4 py-3 text-left font-medium text-gray-700 cursor-pointer hover:text-blue-600">
+                    <th class="px-4 py-3 text-left font-medium text-gray-700">
                         Alunos ↕
                     </th>
                     <th class="px-4 py-3 text-center font-medium text-gray-700">
@@ -163,7 +166,7 @@
             </thead>
             <tbody class="divide-y divide-gray-200">
                 <tr *ngIf="filteredTurmas.length === 0">
-                    <td colspan="9" class="px-4 py-8 text-center text-gray-400">
+                    <td colspan="10" class="px-4 py-8 text-center text-gray-400">
                         Nenhuma turma encontrada.
                     </td>
                 </tr>
@@ -173,10 +176,13 @@
                         <input type="checkbox" class="rounded" />
                     </td>
                     <td class="px-4 py-3 font-medium text-gray-900">
-                        {{ turma.name || turma.codigo || '—' }}
+                        {{ turma.name || '—' }}
                     </td>
                     <td class="px-4 py-3 text-gray-700">
-                        {{ getOrigemNome(turma.origem) }}
+                        {{ turma.origem || 'SIAC' }}
+                    </td>
+                    <td class="px-4 py-3 text-gray-700">
+                        {{ getTurnoNome(turma.turno) }}
                     </td>
                     <td class="px-4 py-3 text-gray-700">
                         {{ turma.operational_unit?.regional_department?.name ||
@@ -189,10 +195,10 @@
                         {{ turma.course?.name || '—' }}
                     </td>
                     <td class="px-4 py-3 text-gray-700">
-                        {{ getTeacherNames(turma) }}
+                        {{ getDocentesResponsaveis(turma) }}
                     </td>
                     <td class="px-4 py-3 text-gray-700 text-center">
-                        {{ getStudentsCount(turma) }}
+                        {{ countAlunos(turma) }}
                     </td>
                     <td class="px-4 py-3">
                         <div class="flex items-center justify-center gap-2">
@@ -206,8 +212,9 @@
                                 </svg>
                             </button>
 
-                            <!-- Visualizar (placeholder) -->
-                            <button class="p-1 hover:bg-gray-100 rounded transition" title="Ver detalhes">
+                            <!-- Visualizar -->
+                            <button (click)="verDetalhes(turma)" class="p-1 hover:bg-gray-100 rounded transition"
+                                title="Ver detalhes">
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                     stroke-width="1.5" stroke="currentColor" class="w-5 h-5 text-gray-600">
                                     <path stroke-linecap="round" stroke-linejoin="round"
@@ -227,7 +234,6 @@
 <!-- MODAL -->
 <div *ngIf="isModalOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
     (click.self)="fecharModal()" tabindex="-1" (keydown.escape)="fecharModal()">
-
     <div class="flex w-full max-w-2xl flex-col rounded-lg bg-white shadow-xl max-h-[90vh]">
 
         <!-- HEADER -->
@@ -251,7 +257,7 @@
                     </p>
                 </div>
 
-                <!-- Grid com 2 colunas -->
+                <!-- Grid com 2 colunas: Curso / Escola -->
                 <div class="grid grid-cols-2 gap-4">
                     <!-- Curso -->
                     <div>
@@ -280,6 +286,36 @@
                         </select>
                         <p *ngIf="fieldErrors?.operational_unit_id" class="text-xs text-red-600 mt-1">
                             {{ fieldErrors.operational_unit_id[0] }}
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Grid com 2 colunas: Origem / Turno -->
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Origem</label>
+                        <select [(ngModel)]="turmaForm.origem"
+                            class="w-full rounded-md border-gray-300 shadow-sm px-3 py-2 text-sm focus:border-blue-500 focus:ring-blue-500">
+                            <option *ngFor="let origem of origens" [value]="origem.name">
+                                {{ origem.name }}
+                            </option>
+                        </select>
+                        <p *ngIf="fieldErrors?.origem" class="text-xs text-red-600 mt-1">
+                            {{ fieldErrors.origem[0] }}
+                        </p>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Turno *</label>
+                        <select [(ngModel)]="turmaForm.turno"
+                            class="w-full rounded-md border-gray-300 shadow-sm px-3 py-2 text-sm focus:border-blue-500 focus:ring-blue-500">
+                            <option value="">Selecione o turno</option>
+                            <option *ngFor="let turno of turnos" [value]="turno.id">
+                                {{ turno.name }}
+                            </option>
+                        </select>
+                        <p *ngIf="fieldErrors?.turno" class="text-xs text-red-600 mt-1">
+                            {{ fieldErrors.turno[0] }}
                         </p>
                     </div>
                 </div>

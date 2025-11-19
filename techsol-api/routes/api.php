@@ -26,60 +26,74 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::post('/login/profile', [AuthController::class, 'selectProfile']);
 
-    // Rota para convidar colaboradores
+    // Convites
     Route::post('/invites/start', [InviteController::class, 'start']);
     Route::post('/invites/{invitation}/roles', [InviteController::class, 'assignRoles']);
     Route::post('/invites/{invitation}/context', [InviteController::class, 'assignContext']);
     Route::post('/invites/{invitation}/send', [InviteController::class, 'send']);
-
-    // Rota para LISTAR os convites
     Route::get('/invites', [InviteController::class, 'index']);
 
-    // Rota de exemplo para obter dados do usuário logado
+    // Usuário logado
     Route::get('/user', function (Request $request) {
         return $request->user();
     });
 
-    // Rota para listar e pesquisar colaboradores
+    // Colaboradores
     Route::get('/users', [UserController::class, 'index']);
     Route::get('/users/export', [UserController::class, 'export']);
     Route::get('/users/{user}', [UserController::class, 'show']);
     Route::put('/users/{user}', [UserController::class, 'update']);
 
+    // Estrutura organizacional
     Route::apiResource('regional-departments', RegionalDepartmentController::class);
     Route::apiResource('operational-units', OperationalUnitController::class);
 
+    // Cursos e turmas
     Route::apiResource('courses', CourseController::class);
     Route::apiResource('classes', SchoolClassController::class);
 
-    // NOVAS ROTAS PARA GERIR MATRÍCULAS
-    Route::post('/classes/{schoolClass}/users', [SchoolClassUserController::class, 'store']);
-    // Futuramente, podemos adicionar a rota de remoção:
-    // Route::delete('/classes/{schoolClass}/users/{user}', [SchoolClassUserController::class, 'destroy']);
+    // Matrículas em turmas (ALUNOS)
+    Route::post('/classes/{schoolClass}/students', [SchoolClassUserController::class, 'store']);
+    Route::delete('/classes/{schoolClass}/students/{user}', [SchoolClassUserController::class, 'removeStudent']);
 
+    // Docentes da turma
+    Route::post('/classes/{schoolClass}/teachers', [SchoolClassController::class, 'storeTeacher']);
+    Route::delete('/classes/{schoolClass}/teachers/{user}', [SchoolClassController::class, 'removeTeacher']);
+
+    // Avaliações
     Route::apiResource('evaluations', EvaluationController::class);
     Route::post('/evaluations/{evaluation}/questions', [QuestionController::class, 'store']);
     Route::post('/questions/{question}/answers', [AnswerController::class, 'store']);
     Route::put('/answers/{answer}', [AnswerController::class, 'update']);
     Route::get('/evaluations/{evaluation}/answers', [AnswerController::class, 'index']);
 
+    // Turmas por usuário (associações)
     Route::get('/users/{user}/classes', [UserClassAssociationController::class, 'index']);
     Route::put('/users/{user}/classes', [UserClassAssociationController::class, 'sync']);
 
+    // Listas auxiliares
     Route::get('/turnos', fn() => [
-        ['id'=>'manha','name'=>'Manhã'],
-        ['id'=>'tarde','name'=>'Tarde'],
-        ['id'=>'noite','name'=>'Noite'],
-        ['id'=>'integral','name'=>'Integral'],
+        ['id' => 'manha',    'name' => 'Manhã'],
+        ['id' => 'tarde',    'name' => 'Tarde'],
+        ['id' => 'noite',    'name' => 'Noite'],
+        ['id' => 'integral', 'name' => 'Integral'],
     ]);
 
     Route::get('/origens', fn() => [
-        ['id'=>1,'name'=>'SIAC'],
-        ['id'=>2,'name'=>'IMPORTADO'],
-        ['id'=>3,'name'=>'OUTRO SISTEMA'],
+        ['id' => 1, 'name' => 'SIAC'],
+        ['id' => 2, 'name' => 'IMPORTADO'],
+        ['id' => 3, 'name' => 'OUTRO SISTEMA'],
     ]);
 
-    Route::post('/classes/{schoolClass}/teachers', [SchoolClassController::class, 'storeTeacher']);
-    Route::post('/classes/{schoolClass}/students', [SchoolClassUserController::class, 'store']);
+    // CRUD de Competências (apenas admins podem criar/editar/deletar)
+    Route::apiResource('competencies', CompetencyController::class);
 
+    // Vincular competência a curso
+    Route::post('/competencies/{competency}/courses', [CompetencyController::class, 'attachToCourse']);
+
+    // Progresso do aluno em competências
+    Route::get('/users/{user?}/competencies/progress', [CompetencyController::class, 'getStudentProgress']);
+
+    // Ranking por competência
+    Route::get('/competencies/{competency}/ranking', [CompetencyController::class, 'getCompetencyRanking']);
 });
