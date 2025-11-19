@@ -19,9 +19,7 @@ class DatabaseSeeder extends Seeder
         // A única coisa que faremos aqui é chamar o seeder que cria os perfis (Roles).
         // O método 'call' é a forma correta de executar outros seeders a partir deste arquivo principal.
         $this->call([
-            RoleSeeder::class,
-            CompetencySeeder::class,
-            TestDataSeeder::class,
+            DatabaseDevSeeder::class,
         ]);
     }
 }

@@ -15,42 +15,97 @@ class AnswerController extends Controller
      * Guarda a resposta de um aluno para uma questão específica.
      */
     public function store(Request $request, Question $question)
-    {
-        $user = Auth::user();
+{
+    $user = Auth::user();
 
-        // 1. Validação de Permissão
-        // Apenas alunos podem responder.
-        if (!$user->roles->contains('slug', 'student')) {
-            return response()->json(['message' => 'Apenas alunos podem submeter respostas.'], 403);
-        }
-
-        // O aluno está matriculado na turma desta avaliação?
-        $isEnrolled = $user->classes()->where('school_class_id', $question->evaluation->school_class_id)->exists();
-        if (!$isEnrolled) {
-            return response()->json(['message' => 'Você não está matriculado na turma desta avaliação.'], 403);
-        }
-
-        // 2. Validação dos Dados
-        $validatedData = $request->validate([
-            // A resposta pode ser o ID de uma opção ou um texto livre.
-            'option_id' => 'nullable|exists:options,id',
-            'answer_content' => 'nullable|string',
-        ]);
-        
-        // 3. Cria a Resposta
-        // O método updateOrCreate é útil: se o aluno já respondeu, atualiza a resposta; senão, cria uma nova.
-        $answer = $question->answers()->updateOrCreate(
-            [
-                'user_id' => $user->id, // Chave para encontrar a resposta existente
-            ],
-            [
-                // Dados para criar ou atualizar
-                'answer_content' => $validatedData['answer_content'] ?? $validatedData['option_id'],
-            ]
-        );
-
-        return response()->json($answer, 201);
+    // 1. Permissão: apenas alunos
+    if (!$user->roles->contains('slug', 'student')) {
+        return response()->json(['message' => 'Apenas alunos podem submeter respostas.'], 403);
     }
+
+    // Aluno está matriculado na turma da avaliação?
+    $isEnrolled = $user->classes()
+        ->where('school_class_id', $question->evaluation->school_class_id)
+        ->exists();
+
+    if (!$isEnrolled) {
+        return response()->json(['message' => 'Você não está matriculado na turma desta avaliação.'], 403);
+    }
+
+    // 2. Validação dos Dados
+    $validatedData = $request->validate([
+        'option_id' => 'nullable|exists:options,id',
+        'answer_content' => 'nullable|string',
+        'time_spent' => 'nullable|integer|min:0',
+    ]);
+
+    // 3. Cria ou atualiza a resposta do aluno para essa questão
+    $answerContent = $validatedData['answer_content'] ?? $validatedData['option_id'] ?? null;
+
+    $answer = $question->answers()->updateOrCreate(
+        [
+            'user_id' => $user->id,
+        ],
+        [
+            'answer_content' => $answerContent,
+        ]
+    );
+
+    // 4. Cálculo de correção e pontuação
+    $isCorrect = false;
+    $score = 0;
+
+    if ($question->type === 'multiple_choice' && isset($validatedData['option_id'])) {
+        $isCorrect = $question->checkAnswer($validatedData['option_id']);
+        $score = $question->calculateScore($validatedData['option_id']);
+    }
+
+    $answer->is_correct = $isCorrect;
+    $answer->score = $score;
+    $answer->answered_at = now();
+
+    if (isset($validatedData['time_spent'])) {
+        $answer->time_spent = $validatedData['time_spent'];
+    }
+
+    $answer->save(); // <-- aqui dispara o booted() e atualiza progresso por capacidade
+
+    // 5. Atualizar estatísticas agregadas da questão (QuestionStatistic + UserQuestionAttempt)
+    $selectedOption = null;
+
+    if ($question->type === 'multiple_choice' && isset($validatedData['option_id'])) {
+        $option = $question->options()->find($validatedData['option_id']);
+        if ($option) {
+            $selectedOption = $option->letter;
+        }
+    }
+
+    // Registro de tentativa única por usuário/questão
+    $attempt = \App\Models\UserQuestionAttempt::updateOrCreate(
+        [
+            'user_id' => $user->id,
+            'question_id' => $question->id,
+        ],
+        [
+            'answer_id' => $answer->id,
+            'is_correct' => $isCorrect,
+            'selected_option' => $selectedOption,
+            'last_answered_at' => now(),
+        ]
+    );
+
+    if ($attempt->wasRecentlyCreated) {
+        $attempt->first_answered_at = now();
+        $attempt->save();
+
+        // Atualizar estatísticas da questão
+        $stats = $question->statistics()->firstOrCreate(['question_id' => $question->id]);
+        $stats->updateStats($isCorrect, $selectedOption);
+    }
+
+    return response()->json($answer->fresh(), 201);
+}
+
 
     public function update(Request $request, Answer $answer)
     {

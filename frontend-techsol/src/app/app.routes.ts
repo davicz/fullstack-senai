@@ -11,7 +11,7 @@ import { authGuard } from './services/auth-guard';
 import { Landing } from './pages/landing/landing';
 import { TurmaDetalhes } from './pages/app/turmas/turma-detalhes';
 import { Users } from './pages/app/users/users';
-import { Competencies } from './pages/app/competencies/competencies';
+import { Reports } from '../app/pages/app/reports/reports';
 
 export const routes: Routes = [
   // Landing page (home)
@@ -35,14 +35,14 @@ export const routes: Routes = [
     component: AppLayoutComponent,
     canActivate: [authGuard],
     children: [
-      { path: 'competencies', component: Competencies },
       { path: 'convites', component: Invites, title: 'Convites' },
       { path: 'dashboard', component: Panel, title: 'Painel Inicial' },
       { path: 'turmas', component: Turmas },
       { path: 'turmas/:id', component: TurmaDetalhes },
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
       { path: 'escolas', component: OperatingUnits, title: 'Escolas' },
-      { path: 'users', component: Users },
+      { path: 'usuarios', component: Users },
+      { path: 'reports', component: Reports },
       {
         path: 'usuarios',
         loadComponent: () =>

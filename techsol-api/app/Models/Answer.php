@@ -14,9 +14,9 @@ class Answer extends Model
         'user_id',
         'answer_content',
         'score',
-        'is_correct',        // NOVO
-        'answered_at',       // NOVO: timestamp de quando respondeu
-        'time_spent',        // NOVO: tempo gasto em segundos
+        'is_correct',
+        'answered_at',
+        'time_spent',
     ];
 
     protected $casts = [
@@ -43,38 +43,52 @@ class Answer extends Model
     }
 
     /**
-     * NOVO: Ao salvar, atualiza o progresso nas competências
+     * Ao salvar, atualiza o progresso nas capacidades (hierarquia SIAC).
      */
     protected static function booted()
     {
-        static::saved(function ($answer) {
+        static::saved(function (Answer $answer) {
+            // Só atualiza se já tivermos correção
             if ($answer->is_correct !== null && $answer->question) {
-                $answer->updateCompetencyProgress();
+                $answer->updateCapacityProgress();
             }
         });
     }
 
     /**
-     * NOVO: Atualiza o progresso do aluno nas competências da questão
+     * Atualiza o progresso do aluno na capacidade vinculada à questão.
      */
-    public function updateCompetencyProgress()
+    public function updateCapacityProgress(): void
     {
-        $question = $this->question()->with('competencies')->first();
-        
-        if (!$question || $question->competencies->isEmpty()) {
+        // Carrega questão com capacidade e curso da turma
+        $question = $this->question()
+            ->with(['capacity', 'evaluation.schoolClass'])
+            ->first();
+
+        if (!$question || !$question->capacity || !$question->evaluation || !$question->evaluation->schoolClass) {
             return;
         }
 
-        foreach ($question->competencies as $competency) {
-            // Busca ou cria o registro de progresso
-            $progress = UserCompetencyProgress::firstOrCreate([
-                'user_id' => $this->user_id,
-                'competency_id' => $competency->id,
-                'course_id' => $question->evaluation->schoolClass->course_id,
-            ]);
+        $capacityId = $question->capacity_id;
+        $courseId = $question->evaluation->schoolClass->course_id;
 
-            // Atualiza o progresso com a nova pontuação
-            $progress->updateProgress($this->score);
+        if (!$capacityId || !$courseId) {
+            return;
         }
+
+        // Busca ou cria progresso
+        $progress = UserCapacityProgress::firstOrCreate(
+            [
+                'user_id' => $this->user_id,
+                'capacity_id' => $capacityId,
+                'course_id' => $courseId,
+            ]
+        );
+
+        $questionPoints = $question->points ?? 10;
+        $score = $this->score ?? 0;
+        $isCorrect = (bool) $this->is_correct;
+
+        $progress->updateProgress($score, $questionPoints, $isCorrect);
     }
 }

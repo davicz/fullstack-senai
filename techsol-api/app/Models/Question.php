@@ -15,6 +15,7 @@ class Question extends Model
         'type',
         'difficulty', // NOVO: fácil, médio, difícil
         'points',     // NOVO: pontuação da questão
+        'capacity_id',
     ];
 
     protected $casts = [
@@ -77,5 +78,32 @@ class Question extends Model
             return $this->points ?? 10; // Pontuação padrão se não definida
         }
         return 0;
+    }
+
+        // Adicionar relações
+    public function capacity()
+    {
+        return $this->belongsTo(Capacity::class);
+    }
+
+    public function statistics()
+    {
+        return $this->hasOne(QuestionStatistic::class);
+    }
+
+    public function attempts()
+    {
+        return $this->hasMany(UserQuestionAttempt::class);
+    }
+
+    public function getIdentifierAttribute()
+    {
+        return 'SIAC_' . $this->id;
+    }
+
+    public function getCorrectAnswerLetter()
+    {
+        $correctOption = $this->options()->where('is_correct', true)->first();
+        return $correctOption ? $correctOption->letter : null;
     }
 }

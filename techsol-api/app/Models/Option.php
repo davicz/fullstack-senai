@@ -13,6 +13,7 @@ class Option extends Model
         'question_id',
         'text',
         'is_correct',
+        'letter',
     ];
 
     /**

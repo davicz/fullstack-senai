@@ -15,6 +15,7 @@ use App\Http\Controllers\Api\QuestionController;
 use App\Http\Controllers\Api\AnswerController;
 use App\Http\Controllers\Api\UserClassAssociationController;
 use App\Http\Controllers\Api\CompetencyController;
+use App\Http\Controllers\Api\ReportController;
 
 // Rota de Login (Pública)
 Route::post('/login', [AuthController::class, 'login']);
@@ -100,4 +101,9 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Ranking por competência
     Route::get('/competencies/{competency}/ranking', [CompetencyController::class, 'getCompetencyRanking']);
+
+    Route::prefix('reports')->group(function () {
+    Route::get('/performance-by-item', [ReportController::class, 'performanceByItem']);
+    Route::get('/questions/{question}/details', [ReportController::class, 'questionDetails']);
+    });
 });
