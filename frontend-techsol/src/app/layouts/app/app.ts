@@ -60,4 +60,14 @@ export class AppLayoutComponent implements OnInit {
   logout(): void {
     this.auth.logout();
   }
+  
+  isMobileMenuOpen = false;
+
+  toggleMobileMenu() {
+    this.isMobileMenuOpen = !this.isMobileMenuOpen;
+  }
+
+  closeMobileMenu() {
+    this.isMobileMenuOpen = false;
+  }
 }

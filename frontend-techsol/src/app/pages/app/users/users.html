@@ -9,13 +9,13 @@
       <div>
         <label class="block text-sm font-medium text-gray-700">Buscar</label>
         <input type="text" [(ngModel)]="searchTerm" (keyup.enter)="loadUsers()" placeholder="Nome, E-mail ou CPF"
-          class="form-input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+          class="form-input mt-1 block w-full rounded-sd border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
       </div>
 
       <div>
         <label class="block text-sm font-medium text-gray-700">Perfil</label>
         <select [(ngModel)]="selectedRoleId"
-          class="form-select mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+          class="form-select mt-1 block w-full rounded-sd border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
           <option value="">Todos</option>
           @for (role of allRoles; track role.id) {
           <option [value]="role.id">{{ role.name }}</option>
@@ -25,7 +25,7 @@
       </div>
 
       <div>
-        <button (click)="loadUsers()" class="w-full rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700">
+        <button (click)="loadUsers()" class="w-full rounded-md bg-blue-600 text-white hover:bg-blue-700">
           Filtrar Resultados
         </button>
       </div>
@@ -66,8 +66,9 @@
           </td>
           <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{{ user.cpf }}</td>
           <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-            <span class="inline-flex rounded-full bg-green-100 px-2 text-xs font-semibold leading-5 text-green-800">
-              {{ getRoleNames(user.roles) }}
+            <span class="inline-flex rounded-full px-2 text-xs font-semibold leading-5"
+                  [ngClass]="getRoleBadgeClass(user.roles)">
+                {{ getRoleNames(user.roles) }}
             </span>
           </td>
           <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">

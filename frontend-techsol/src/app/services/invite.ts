@@ -45,4 +45,10 @@ export class InviteService {
   sendInvite(invitationId: number): Observable<any> {
     return this.http.post(`${this.apiBase}/invites/${invitationId}/send`, {});
   }
+
+  // CANCELAR CONVITE
+cancelInvite(id: number) {
+  // Ajuste a URL conforme sua rota no Laravel (ex: /invites, /invitations, etc)
+  return this.http.patch(`${this.apiBase}/invites/${id}/cancel`, {});
+}
 }

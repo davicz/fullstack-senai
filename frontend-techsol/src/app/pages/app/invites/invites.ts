@@ -21,6 +21,10 @@ export class Invites implements OnInit, OnDestroy {
 
   // modal / wizard
   isModalOpen = false;
+
+  isDetailsModalOpen = false;
+  selectedInvite: any = null;
+
   currentStep = 1; // 1..4
 
   // form
@@ -193,41 +197,99 @@ export class Invites implements OnInit, OnDestroy {
 
   // [FIM DA ADIÇÃO]
 
-  translateStatus(status: string): string {
-    switch (status) {
-      case 'sent': return 'Enviado';
-      case 'pending': return 'Pendente';
-      case 'step_1_pending_profiles': return 'Aguardando perfis';
-      case 'step_2_pending_context': return 'Aguardando atribuições';
-      default: return status;
-    }
+ translateStatus(status: string): string {
+  switch (status) {
+    case 'pending':
+    case 'sent': 
+      return 'Pendente';
+
+    // --- FINALIZADOS ---
+    case 'accepted':
+    case 'completed':
+      return 'Aceito'; 
+
+    // --- INVALIDADOS ---
+    case 'cancelled':
+      return 'Cancelado';
+    
+    case 'expired':
+      return 'Expirado'; // O prazo de 24h acabou
+
+    case 'step_1_pending_profiles':
+      return 'Rascunho (Faltam Perfis)';
+    
+    case 'step_2_pending_context':
+    case 'step_3_pending_confirmation':
+      return 'Rascunho (Não enviado)';
+
+    default:
+      return status || '—';
   }
-
-  openInviteDetails(invite: any) {
-  const role = invite.roles?.[0];
-  const ctx = role?.pivot ?? {};
-
-  const reg = ctx.regional_department_id
-    ? this.getRegionalDepartmentName(ctx.regional_department_id)
-    : '—';
-
-  const uo = ctx.operational_unit_id
-    ? this.getOperationalUnitName(ctx.operational_unit_id)
-    : '—';
-
-  const msg =
-    `E-mail: ${invite.email}\n` +
-    `CPF: ${invite.cpf}\n` +
-    `Status: ${this.translateStatus(invite.status)}\n` +
-    `Criado em: ${invite.created_at}\n\n` +
-    `Região: ${reg}\n` +
-    `Escola: ${uo}`;
-
-  alert(msg);
 }
 
+ openInviteDetails(invite: any) {
+    // 1. Extrai as informações de relacionamento (Roles e Contexto)
+    const role = invite.roles?.[0];
+    const ctx = role?.pivot ?? {};
 
+    // 2. Resolve os nomes (Região e Escola) usando os métodos que você já tem
+    const regName = ctx.regional_department_id
+      ? this.getRegionalDepartmentName(ctx.regional_department_id)
+      : null;
 
+    const unitName = ctx.operational_unit_id
+      ? this.getOperationalUnitName(ctx.operational_unit_id)
+      : null;
+
+    // 3. Monta o objeto selectedInvite com tudo que o HTML precisa
+    this.selectedInvite = {
+      ...invite,
+      role_name: role?.name || '—',
+      regional_department: regName ? { name: regName } : null,
+      operational_unit: unitName ? { name: unitName } : null
+    };
+
+    // 4. Abre o modal
+    this.isDetailsModalOpen = true;
+  }
+
+  closeDetailsModal() {
+    this.isDetailsModalOpen = false;
+    this.selectedInvite = null;
+  }
+
+  // Função auxiliar para verificar validade (usada no HTML)
+  isExpired(dateStr: string): boolean {
+    if (!dateStr) return false;
+    return new Date(dateStr) < new Date();
+  }
+
+  // AÇÃO DE CANCELAR
+  cancelInvite(invite: any) {
+    if (!invite || !invite.id) return;
+
+    // Confirmação simples nativa
+    if (!confirm(`Tem certeza que deseja cancelar o convite para ${invite.email}?`)) {
+      return;
+    }
+
+    this.isLoading = true; // Reutilizando sua variável de loading global ou crie uma isDetailsLoading
+
+    this.inviteService.cancelInvite(invite.id).subscribe({
+      next: () => {
+        this.isLoading = false;
+        alert('Convite cancelado com sucesso!');
+        
+        this.closeDetailsModal(); // Fecha o modal
+        this.loadSentInvites();   // Recarrega a lista para atualizar o status
+      },
+      error: (err: any) => {
+        console.error('Erro ao cancelar convite', err);
+        this.isLoading = false;
+        alert('Erro ao cancelar o convite. Tente novamente.');
+      }
+    });
+  }
 
   // -------------------------
   // list loaders
