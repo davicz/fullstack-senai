@@ -11,7 +11,11 @@ class OperationalUnit extends Model
 
     protected $fillable = [
         'name',
-        'regional_department_id'
+        'regional_department_id',
+        'code',
+        'city',
+        'days_submission',
+        'approval_percentage'
     ];
 
     public function regionalDepartment()
