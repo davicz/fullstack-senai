@@ -1,4 +1,4 @@
-# Fullstack Project - SENAI
+# SISTEMA DE AVALIAÇÃO DE COMPETÊNCIAS - SENAI
 
 Projeto composto por uma API em **Laravel** e um Frontend em **Angular**.
 
