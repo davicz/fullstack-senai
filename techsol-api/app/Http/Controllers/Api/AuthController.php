@@ -106,40 +106,81 @@ class AuthController extends Controller
      * O MÉTODO DE REGISTRO QUE JÁ ESTAVA CORRETO
      */
     public function register(Request $request)
-    {
-        $request->validate([
-            'token' => 'required|string',
-            'name' => 'required|string|max:100',
-            'cpf' => 'required|string|size:11|unique:users,cpf',
-            'password' => 'required|string|min:8|regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&].*$/',
-        ]);
+{
+    $request->validate([
+        'token' => 'required|string',
+        'name' => 'required|string|max:100',
+        'password' => 'required|string|min:8', // Adicione suas regras de regex se quiser
+        // Campos opcionais
+        'address' => 'nullable|string',
+        'phone' => 'nullable|string',
+        'city' => 'nullable|string',
+        'uf' => 'nullable|string|size:2',
+        'cep' => 'nullable|string',
+        'education_level' => 'nullable|string',
+    ]);
 
-        $invitation = Invitation::where('token', $request->token)->first();
-        if (!$invitation || $invitation->status !== 'sent' || $invitation->expires_at < now()) {
-            return response()->json(['message' => 'Token de convite inválido ou expirado.'], 404);
-        }
+    $invitation = Invitation::where('token', $request->token)->first();
 
-        // Busca os perfis que foram preparados para este convite
-        $rolesToAttach = $invitation->roles()->get();
+    if (!$invitation || $invitation->status !== 'sent' || $invitation->expires_at < now()) {
+        return response()->json(['message' => 'Convite inválido ou expirado.'], 404);
+    }
 
-        // Cria o usuário
-        $user = User::create([
-            'name' => $request->name,
-            'email' => $invitation->email,
-            'cpf' => $invitation->cpf,
-            'password' => Hash::make($request->password),
+    // --- MUDANÇA AQUI: Verifica se já existe antes de criar ---
+    $user = User::where('email', $invitation->email)
+                ->orWhere('cpf', $invitation->cpf)
+                ->first();
+
+    $userData = [
+        'name' => $request->name,
+        'password' => Hash::make($request->password),
+        'address' => $request->address,
+        'phone' => $request->phone,
+        'city' => $request->city,
+        'uf' => $request->uf,
+        'cep' => $request->cep,
+        'education_level' => $request->education_level,
+        'interest_area' => $request->interest_area,
+        'interest_course' => $request->interest_course,
+        // Se o usuário já existe, não mudamos e-mail nem cpf para evitar conflitos
+    ];
+
+    if ($user) {
+        // SE JÁ EXISTE: Atualiza os dados
+        $user->update($userData);
+    } else {
+        // SE NÃO EXISTE: Cria do zero com Email e CPF do convite
+        $userData['email'] = $invitation->email;
+        $userData['cpf'] = $invitation->cpf;
+        $user = User::create($userData);
+    }
+
+    // Associa os perfis e contextos
+    $rolesToAttach = $invitation->roles()->get();
+    
+    foreach($rolesToAttach as $role) {
+        // syncWithoutDetaching evita duplicar se o usuário já tiver esse papel
+        $user->roles()->syncWithoutDetaching([
+            $role->id => [
+                'regional_department_id' => $role->pivot->regional_department_id,
+                'operational_unit_id' => $role->pivot->operational_unit_id
+            ]
         ]);
         
-        // Associa o usuário aos perfis e contextos definidos no convite
-        foreach($rolesToAttach as $role) {
-            $user->roles()->attach($role->id);
+        // Atualiza contexto principal se ainda não tiver
+        if(!$user->regional_department_id && $role->pivot->regional_department_id) {
+            $user->regional_department_id = $role->pivot->regional_department_id;
         }
-
-        // Atualiza o status do convite para finalizado
-        $invitation->status = 'completed';
-        $invitation->registered_user_id = $user->id;
-        $invitation->save();
-
-        return response()->json(['message' => 'Usuário cadastrado com sucesso!'], 201);
+        if(!$user->operational_unit_id && $role->pivot->operational_unit_id) {
+            $user->operational_unit_id = $role->pivot->operational_unit_id;
+        }
     }
+    $user->save(); 
+
+    $invitation->status = 'completed';
+    $invitation->registered_user_id = $user->id;
+    $invitation->save();
+
+    return response()->json(['message' => 'Cadastro realizado com sucesso!'], 201);
+}
 }

@@ -44,8 +44,18 @@ class InvitationEmail extends Mailable
      */
     public function content(): Content
     {
+        // 1. Define a URL base do seu Angular
+        // Idealmente isso viria do .env, mas pode deixar fixo por enquanto
+        $frontendUrl = 'http://localhost:4200'; 
+
+        // 2. Monta o link no formato que o Angular espera (?token=...)
+        $link = $frontendUrl . '/register?token=' . $this->invitation->token;
+
         return new Content(
             view: 'emails.invitation',
+            with: [
+                'url' => $link, // <--- Enviamos a variável $url pronta para o HTML
+            ],
         );
     }
 

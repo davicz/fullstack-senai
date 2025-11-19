@@ -16,12 +16,14 @@ use App\Http\Controllers\Api\AnswerController;
 use App\Http\Controllers\Api\UserClassAssociationController;
 use App\Http\Controllers\Api\CompetencyController;
 use App\Http\Controllers\Api\ReportController;
+use App\Http\Controllers\Api\AssessmentEventController;
 
 // Rota de Login (Pública)
 Route::post('/login', [AuthController::class, 'login']);
 
 // Rota de Registro (Pública, mas validada pelo token no controller)
 Route::post('/register', [AuthController::class, 'register']);
+Route::get('/invitation/{token}', [InviteController::class, 'checkToken']);
 
 
 // Agrupando rotas que precisam de autenticação
@@ -106,4 +108,18 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/performance-by-item', [ReportController::class, 'performanceByItem']);
     Route::get('/questions/{question}/details', [ReportController::class, 'questionDetails']);
     });
+
+    // Eventos de Avaliação (SAEP / DR / DN)
+    Route::get('/assessment-events', [AssessmentEventController::class, 'index']);
+    Route::get('/assessment-events/{assessmentEvent}', [AssessmentEventController::class, 'show']);
+
+    // Aba "Agendamento de Prova"
+    Route::get('/assessment-events/{assessmentEvent}/students', [AssessmentEventController::class, 'students']);
+
+    // Gerenciamento de alunos no evento
+    Route::post('/assessment-events/{assessmentEvent}/students', [AssessmentEventController::class, 'attachStudents']);
+    Route::delete('/assessment-events/{assessmentEvent}/students/{user}', [AssessmentEventController::class, 'detachStudent']);
+
+    // Agendamento da prova para um aluno específico
+    Route::post('/assessment-events/{assessmentEvent}/students/{user}/schedule', [AssessmentEventController::class, 'scheduleStudent']);
 });
