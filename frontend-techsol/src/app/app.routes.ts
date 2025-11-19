@@ -12,24 +12,36 @@ import { Landing } from './pages/landing/landing';
 import { TurmaDetalhes } from './pages/app/turmas/turma-detalhes';
 import { Users } from './pages/app/users/users';
 import { Reports } from '../app/pages/app/reports/reports';
+import { AssessmentEventDetail } from './pages/app/assessments/assessment-event-detail';
+import { Assessments } from './pages/app/assessments/assessments';
+import { RegisterComponent } from './pages/auth/register/register';
 
 export const routes: Routes = [
-  // Landing page (home)
+  // 1. Landing page (Home)
   { 
     path: '', 
     component: Landing 
   },
+
+  // 2. Rota de Cadastro (Pública) - O Link do E-mail vai cair aqui
+  { 
+    path: 'register', 
+    component: RegisterComponent,
+    title: 'Finalizar Cadastro'
+  },
   
-  // Rotas de autenticação
+  // 3. Rotas de Autenticação
   {
     path: 'auth',
     component: AuthLayoutComponent,
     children: [
       { path: 'login', component: Login },
       { path: 'select-profile', component: ProfileSelector },
-      { path: '', redirectTo: 'login', pathMatch: 'full' }
+      { path: '', redirectTo: 'login', pathMatch: 'full' },
     ]
   },
+
+  // 4. Rotas Protegidas (Sistema Interno)
   {
     path: 'app',
     component: AppLayoutComponent,
@@ -39,18 +51,17 @@ export const routes: Routes = [
       { path: 'dashboard', component: Panel, title: 'Painel Inicial' },
       { path: 'turmas', component: Turmas },
       { path: 'turmas/:id', component: TurmaDetalhes },
-      { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
       { path: 'escolas', component: OperatingUnits, title: 'Escolas' },
-      { path: 'usuarios', component: Users },
+      { path: 'usuarios', component: Users }, // <--- Mantive apenas esta (a duplicada foi removida)
       { path: 'reports', component: Reports },
-      {
-        path: 'usuarios',
-        loadComponent: () =>
-          import('./pages/app/users/users').then(m => m.Users),
-      },
+      { path: 'assessments/:id', component: AssessmentEventDetail },
+      { path: 'assessments', component: Assessments },
+      
+      // Redirecionamento padrão dentro do /app
+      { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
     ]
   },
   
-  // Redireciona qualquer rota não encontrada para a landing page
+  // 5. Rota Curinga (Sempre a última)
   { path: '**', redirectTo: '', pathMatch: 'full' }
 ];

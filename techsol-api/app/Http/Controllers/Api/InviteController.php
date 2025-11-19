@@ -145,4 +145,51 @@ class InviteController extends Controller
             'data' => $invites
         ]);
     }
+
+        /**
+     * Valida o token e retorna os dados para o formulário de cadastro (Tela 4)
+     */
+    public function checkToken($token)
+    {
+        $invitation = Invitation::where('token', $token)
+            ->where('status', 'sent')
+            ->where('expires_at', '>', now())
+            ->with(['roles']) // Carrega os roles e o pivot
+            ->first();
+
+        if (!$invitation) {
+            return response()->json(['message' => 'Convite inválido ou expirado.'], 404);
+        }
+
+        // Formata os perfis para mostrar nomes amigáveis na Tela 4
+        $formattedRoles = $invitation->roles->map(function($role) {
+            
+            // Busca os nomes baseados nos IDs que estão na tabela pivo (invitation_role)
+            $regionalName = null;
+            $unitName = null;
+
+            if ($role->pivot->regional_department_id) {
+                $regional = \App\Models\RegionalDepartment::find($role->pivot->regional_department_id);
+                $regionalName = $regional ? $regional->name : null; // Ex: "DR - Alagoas"
+            }
+
+            if ($role->pivot->operational_unit_id) {
+                $unit = \App\Models\OperationalUnit::find($role->pivot->operational_unit_id);
+                $unitName = $unit ? $unit->name : null; // Ex: "Escola Senai Poço"
+            }
+
+            return [
+                'role_name' => $role->name, // Ex: "Docente", "Admin Regional"
+                'regional_name' => $regionalName,
+                'unit_name' => $unitName,
+                'is_national' => $role->slug === 'national_admin' // Flag útil para o front
+            ];
+        });
+
+        return response()->json([
+            'email' => $invitation->email,
+            'cpf' => $invitation->cpf,
+            'roles_info' => $formattedRoles
+        ]);
+    }
 }

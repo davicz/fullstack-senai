@@ -1,0 +1,106 @@
+<!-- HEADER DAS TABS -->
+<div class="w-full border-b mb-4">
+    <div class="flex gap-6 text-gray-600 text-sm font-medium">
+        <button class="py-3 px-1 border-b-2 transition"
+            [ngClass]="{ 'border-blue-600 text-blue-600': selectedType === 'saep', 'border-transparent': selectedType !== 'saep' }"
+            (click)="changeType('saep')">
+            Avaliações SAEP
+        </button>
+
+        <button class="py-3 px-1 border-b-2 transition"
+            [ngClass]="{ 'border-blue-600 text-blue-600': selectedType === 'dn', 'border-transparent': selectedType !== 'dn' }"
+            (click)="changeType('dn')">
+            Avaliações DN
+        </button>
+
+        <button class="py-3 px-1 border-b-2 transition"
+            [ngClass]="{ 'border-blue-600 text-blue-600': selectedType === 'dr', 'border-transparent': selectedType !== 'dr' }"
+            (click)="changeType('dr')">
+            Avaliações DR
+        </button>
+    </div>
+</div>
+
+<!-- FILTRO SUPERIOR -->
+<div class="bg-white p-4 rounded-lg shadow mb-6">
+
+    <div class="text-sm font-medium text-gray-700 mb-2">Eventos:</div>
+
+    <div class="flex gap-3 items-end">
+        <div class="flex-1">
+            <label class="text-xs text-gray-500">Nome do evento</label>
+            <input type="text" [(ngModel)]="searchTerm" placeholder="Nome do evento"
+                class="w-full border rounded-md px-3 py-2 text-sm">
+        </div>
+
+        <button (click)="loadEvents()"
+            class="bg-blue-600 text-white px-5 py-2 rounded-md text-sm shadow hover:bg-blue-700">
+            Filtrar
+        </button>
+
+        <button (click)="clearFilters()"
+            class="bg-gray-200 text-gray-700 px-5 py-2 rounded-md text-sm hover:bg-gray-300">
+            Limpar
+        </button>
+    </div>
+
+</div>
+
+<!-- TABELA DE EVENTOS -->
+<div class="bg-white rounded-lg shadow overflow-hidden">
+
+    <!-- loading -->
+    <div *ngIf="loading" class="p-10 text-center">
+        <div class="loader"></div>
+        <p class="text-gray-500 text-sm mt-2">Carregando eventos...</p>
+    </div>
+
+    <!-- erro -->
+    <div *ngIf="error" class="p-4 text-red-600 text-center">{{ error }}</div>
+
+    <!-- tabela -->
+    <table *ngIf="!loading && !error" class="w-full text-sm">
+        <thead class="bg-gray-50 border-b">
+            <tr>
+                <th class="px-5 py-3 text-left">Evento</th>
+                <th class="px-5 py-3 text-left">Data Inicial</th>
+                <th class="px-5 py-3 text-left">Data Final</th>
+                <th class="px-5 py-3 text-left">Data Inicial das Provas</th>
+                <th class="px-5 py-3 text-left">Data Final das Provas</th>
+                <th class="px-5 py-3 text-center">Status</th>
+                <th class="px-5 py-3 text-center">Ações</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            <tr *ngFor="let event of events" class="border-b hover:bg-gray-50">
+
+                <!-- Evento -->
+                <td class="px-5 py-3 font-medium text-gray-900">
+                    {{ event.name }}
+                </td>
+
+                <!-- Datas -->
+                <td class="px-5 py-3">{{ event.start_date }}</td>
+                <td class="px-5 py-3">{{ event.end_date }}</td>
+                <td class="px-5 py-3">{{ event.exam_start_date }}</td>
+                <td class="px-5 py-3">{{ event.exam_end_date }}</td>
+
+                <!-- Status -->
+                <td class="px-5 py-3 text-center">
+                    <span class="inline-flex justify-center">
+                        <i class="fa-solid fa-lock text-red-500 text-xl"></i>
+                    </span>
+                </td>
+
+                <!-- Ações -->
+                <td class="px-5 py-3 text-center">
+                    <button (click)="openEventDetails(event)" class="p-2 rounded-full hover:bg-gray-200 transition">
+                        <i class="fa-solid fa-ellipsis-vertical text-gray-700 text-lg"></i>
+                    </button>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+</div>

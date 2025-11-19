@@ -21,9 +21,12 @@ class User extends Authenticatable
         'email',
         'password',
         'cpf',
-        'role_id',
-        'regional_department_id', // <-- GARANTE QUE ESTE CAMPO SEJA SALVO
-        'operational_unit_id',    // <-- GARANTE QUE ESTE CAMPO SEJA SALVO
+        'role_id', // Se ainda usar esse campo legado
+        'regional_department_id',
+        'operational_unit_id',
+        // Novos campos
+        'address', 'cep', 'city', 'uf', 'phone',
+        'education_level', 'interest_area', 'interest_course'
     ];
 
     protected $with = ['roles'];
