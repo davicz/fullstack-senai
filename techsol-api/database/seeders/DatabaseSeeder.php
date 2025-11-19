@@ -20,6 +20,7 @@ class DatabaseSeeder extends Seeder
         // O método 'call' é a forma correta de executar outros seeders a partir deste arquivo principal.
         $this->call([
             RoleSeeder::class,
+            CompetencySeeder::class,
             TestDataSeeder::class,
         ]);
     }

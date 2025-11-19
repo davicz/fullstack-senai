@@ -10,6 +10,7 @@ import { authGuard } from './services/auth-guard';
 import { Landing } from './pages/landing/landing';
 import { TurmaDetalhes } from './pages/app/turmas/turma-detalhes';
 import { Users } from './pages/app/users/users';
+import { Competencies } from './pages/app/competencies/competencies';
 
 export const routes: Routes = [
   // Landing page (home)
@@ -33,6 +34,7 @@ export const routes: Routes = [
     component: AppLayoutComponent,
     canActivate: [authGuard],
     children: [
+      { path: 'competencies', component: Competencies },
       { path: 'dashboard', component: Panel },
       { path: 'invites', component: Invites },
       { path: 'users', component: Users },

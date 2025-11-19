@@ -14,6 +14,7 @@ use App\Http\Controllers\Api\EvaluationController;
 use App\Http\Controllers\Api\QuestionController;
 use App\Http\Controllers\Api\AnswerController;
 use App\Http\Controllers\Api\UserClassAssociationController;
+use App\Http\Controllers\Api\CompetencyController;
 
 // Rota de Login (Pública)
 Route::post('/login', [AuthController::class, 'login']);
