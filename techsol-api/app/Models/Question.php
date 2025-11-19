@@ -13,11 +13,22 @@ class Question extends Model
         'evaluation_id',
         'statement',
         'type',
+        'difficulty', // NOVO: fácil, médio, difícil
+        'points',     // NOVO: pontuação da questão
     ];
 
     protected $casts = [
-        'options' => 'array',
+        'points' => 'integer',
     ];
+
+    /**
+     * NOVO: Relação com competências
+     */
+    public function competencies()
+    {
+        return $this->belongsToMany(Competency::class, 'competency_question')
+            ->withPivot('weight');
+    }
 
     /**
      * Relação: Uma questão tem muitas opções.
@@ -41,5 +52,30 @@ class Question extends Model
     public function answers()
     {
         return $this->hasMany(Answer::class);
+    }
+
+    /**
+     * NOVO: Verifica se a resposta do aluno está correta
+     */
+    public function checkAnswer($answerContent): bool
+    {
+        if ($this->type === 'multiple_choice') {
+            $correctOption = $this->options()->where('is_correct', true)->first();
+            return $correctOption && $correctOption->id == $answerContent;
+        }
+        
+        // Para questões descritivas, a correção é manual
+        return false;
+    }
+
+    /**
+     * NOVO: Calcula pontuação baseada na resposta
+     */
+    public function calculateScore($answerContent): float
+    {
+        if ($this->checkAnswer($answerContent)) {
+            return $this->points ?? 10; // Pontuação padrão se não definida
+        }
+        return 0;
     }
 }

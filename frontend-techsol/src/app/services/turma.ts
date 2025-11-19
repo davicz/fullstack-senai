@@ -11,67 +11,72 @@ export class TurmaService {
 
   constructor(private http: HttpClient) {}
 
-  // LISTAR TURMAS (GET /classes)
+  // TURMAS
   getTurmas(): Observable<any> {
     return this.http.get(`${this.apiBase}/classes`);
   }
 
-  // BUSCAR UMA TURMA (GET /classes/{id})
   getTurma(id: number): Observable<any> {
     return this.http.get(`${this.apiBase}/classes/${id}`);
   }
 
-  // CRIAR TURMA (POST /classes)
   createTurma(payload: any): Observable<any> {
     return this.http.post(`${this.apiBase}/classes`, payload);
   }
 
-  // ATUALIZAR TURMA (PUT /classes/{id})
   updateTurma(id: number, payload: any): Observable<any> {
     return this.http.put(`${this.apiBase}/classes/${id}`, payload);
   }
 
-  // EXCLUIR TURMA (DELETE /classes/{id})
   deleteTurma(id: number): Observable<any> {
     return this.http.delete(`${this.apiBase}/classes/${id}`);
   }
 
-  // ADICIONAR PROFESSOR À TURMA
+  // LISTAS AUXILIARES
+  getOrigens(): Observable<any> {
+    return this.http.get(`${this.apiBase}/origens`);
+  }
+
+  getTurnos(): Observable<any> {
+    return this.http.get(`${this.apiBase}/turnos`);
+  }
+
+  getRegionalDepartments(): Observable<any> {
+    return this.http.get(`${this.apiBase}/regional-departments`);
+  }
+
+  getOperationalUnits(): Observable<any> {
+    return this.http.get(`${this.apiBase}/operational-units`);
+  }
+
+  getCursos(): Observable<any> {
+    return this.http.get(`${this.apiBase}/courses`);
+  }
+
+  // USUÁRIOS (para seleção de professores/alunos)
+  getUsers(): Observable<any> {
+    return this.http.get(`${this.apiBase}/users`);
+  }
+
+  // PROFESSORES
   addTeachers(classId: number, teacherIds: number[]): Observable<any> {
     return this.http.post(`${this.apiBase}/classes/${classId}/teachers`, {
       teacher_ids: teacherIds
     });
   }
 
-  // ADICIONAR ALUNOS À TURMA
+  removeTeacher(classId: number, teacherId: number): Observable<any> {
+    return this.http.delete(`${this.apiBase}/classes/${classId}/teachers/${teacherId}`);
+  }
+
+  // ALUNOS
   addStudents(classId: number, studentIds: number[]): Observable<any> {
-    return this.http.post(`${this.apiBase}/classes/${classId}/users`, {
+    return this.http.post(`${this.apiBase}/classes/${classId}/students`, {
       user_ids: studentIds
     });
   }
 
-  // LISTAR ORIGENS
-  getOrigens(): Observable<any> {
-    return this.http.get(`${this.apiBase}/origens`);
-  }
-
-  // (Opcional) LISTAR TURNOS DA API – se quiser usar no futuro
-  getTurnos(): Observable<any> {
-    return this.http.get(`${this.apiBase}/turnos`);
-  }
-
-  // LISTAR DEPARTAMENTOS REGIONAIS
-  getRegionalDepartments(): Observable<any> {
-    return this.http.get(`${this.apiBase}/regional-departments`);
-  }
-
-  // LISTAR UNIDADES OPERACIONAIS
-  getOperationalUnits(): Observable<any> {
-    return this.http.get(`${this.apiBase}/operational-units`);
-  }
-
-  // LISTAR CURSOS
-  getCursos(): Observable<any> {
-    return this.http.get(`${this.apiBase}/courses`);
+  removeStudent(classId: number, studentId: number): Observable<any> {
+    return this.http.delete(`${this.apiBase}/classes/${classId}/students/${studentId}`);
   }
 }

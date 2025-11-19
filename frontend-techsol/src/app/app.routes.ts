@@ -9,6 +9,8 @@ import { Turmas } from './pages/app/turmas/turmas';
 import { OperatingUnits } from './pages/app/operating-units/operating-units';
 import { authGuard } from './services/auth-guard';
 import { Landing } from './pages/landing/landing';
+import { TurmaDetalhes } from './pages/app/turmas/turma-detalhes';
+import { Users } from './pages/app/users/users';
 
 export const routes: Routes = [
   // Landing page (home)
@@ -27,8 +29,6 @@ export const routes: Routes = [
       { path: '', redirectTo: 'login', pathMatch: 'full' }
     ]
   },
-  
-  // Rotas da aplicação (protegidas)
   {
     path: 'app',
     component: AppLayoutComponent,
@@ -36,14 +36,16 @@ export const routes: Routes = [
     children: [
       { path: 'convites', component: Invites, title: 'Convites' },
       { path: 'dashboard', component: Panel, title: 'Painel Inicial' },
-      { path: 'turmas', component: Turmas, title: 'Turmas' },
+      { path: 'turmas', component: Turmas },
+      { path: 'turmas/:id', component: TurmaDetalhes },
+      { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
       { path: 'escolas', component: OperatingUnits, title: 'Escolas' },
+      { path: 'users', component: Users },
       {
         path: 'usuarios',
         loadComponent: () =>
           import('./pages/app/users/users').then(m => m.Users),
       },
-      { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
     ]
   },
   

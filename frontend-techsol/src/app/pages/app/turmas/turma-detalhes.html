@@ -1,0 +1,250 @@
+<div class="space-y-4">
+
+    <!-- Header -->
+    <div class="flex items-center justify-between">
+        <div>
+            <button (click)="voltar()" class="flex items-center text-sm text-gray-600 hover:text-blue-600 mb-2">
+                ← Voltar para lista de turmas
+            </button>
+            <h1 class="text-xl font-semibold text-gray-800">
+                Detalhes da Turma
+            </h1>
+            <p class="text-sm text-gray-600" *ngIf="turma">
+                {{ turma.name }} · {{ turma.codigo || 'sem código' }}
+            </p>
+        </div>
+    </div>
+
+    <!-- Loading / Erro -->
+    <div *ngIf="isLoading" class="p-4 rounded-md bg-white shadow text-center text-gray-500 text-sm">
+        Carregando detalhes...
+    </div>
+
+    <div *ngIf="errorMessage" class="p-4 rounded-md bg-red-50 text-red-700 text-sm">
+        {{ errorMessage }}
+    </div>
+
+    <div *ngIf="successMessage" class="p-4 rounded-md bg-green-50 text-green-700 text-sm">
+        {{ successMessage }}
+    </div>
+
+    <!-- Conteúdo principal -->
+    <div *ngIf="!isLoading && turma" class="rounded-md bg-white shadow">
+
+        <!-- Tabs -->
+        <div class="border-b flex space-x-4 px-4 pt-3">
+            <button (click)="setTab('info')" class="px-3 pb-2 text-sm font-medium border-b-2" [ngClass]="selectedTab === 'info'
+              ? 'border-blue-600 text-blue-600'
+              : 'border-transparent text-gray-600 hover:text-blue-600'">
+                Informações
+            </button>
+            <button (click)="setTab('professores')" class="px-3 pb-2 text-sm font-medium border-b-2" [ngClass]="selectedTab === 'professores'
+              ? 'border-blue-600 text-blue-600'
+              : 'border-transparent text-gray-600 hover:text-blue-600'">
+                Professores
+            </button>
+            <button (click)="setTab('alunos')" class="px-3 pb-2 text-sm font-medium border-b-2" [ngClass]="selectedTab === 'alunos'
+              ? 'border-blue-600 text-blue-600'
+              : 'border-transparent text-gray-600 hover:text-blue-600'">
+                Alunos
+            </button>
+        </div>
+
+        <!-- Tab: Informações -->
+        <div *ngIf="selectedTab === 'info'" class="p-4 space-y-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="bg-gray-50 rounded-md p-3">
+                    <p class="text-xs text-gray-500 uppercase">Nome da turma</p>
+                    <p class="text-sm font-medium text-gray-800">
+                        {{ turma.name || '—' }}
+                    </p>
+                </div>
+
+                <div class="bg-gray-50 rounded-md p-3">
+                    <p class="text-xs text-gray-500 uppercase">Código</p>
+                    <p class="text-sm font-medium text-gray-800">
+                        {{ turma.codigo || turma.name || '—' }}
+                    </p>
+                </div>
+
+                <div class="bg-gray-50 rounded-md p-3">
+                    <p class="text-xs text-gray-500 uppercase">Origem</p>
+                    <p class="text-sm font-medium text-gray-800">
+                        {{ turma.origem || 'SIAC' }}
+                    </p>
+                </div>
+
+                <div class="bg-gray-50 rounded-md p-3">
+                    <p class="text-xs text-gray-500 uppercase">Turno</p>
+                    <p class="text-sm font-medium text-gray-800">
+                        {{ getTurnoNome(turma.turno) }}
+                    </p>
+                </div>
+
+                <div class="bg-gray-50 rounded-md p-3">
+                    <p class="text-xs text-gray-500 uppercase">Departamento Regional</p>
+                    <p class="text-sm font-medium text-gray-800">
+                        {{ turma.operational_unit?.regional_department?.name || '—' }}
+                    </p>
+                </div>
+
+                <div class="bg-gray-50 rounded-md p-3">
+                    <p class="text-xs text-gray-500 uppercase">Escola (UO)</p>
+                    <p class="text-sm font-medium text-gray-800">
+                        {{ turma.operational_unit?.name || '—' }}
+                    </p>
+                </div>
+
+                <div class="bg-gray-50 rounded-md p-3">
+                    <p class="text-xs text-gray-500 uppercase">Curso</p>
+                    <p class="text-sm font-medium text-gray-800">
+                        {{ turma.course?.name || '—' }}
+                    </p>
+                </div>
+
+                <div class="bg-gray-50 rounded-md p-3">
+                    <p class="text-xs text-gray-500 uppercase">Qtd. de alunos</p>
+                    <p class="text-sm font-medium text-gray-800">
+                        {{ countAlunos() }}
+                    </p>
+                </div>
+
+                <div class="bg-gray-50 rounded-md p-3 md:col-span-2">
+                    <p class="text-xs text-gray-500 uppercase">Docentes responsáveis</p>
+                    <p class="text-sm font-medium text-gray-800">
+                        {{ getDocentesResponsaveis() }}
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab: Professores -->
+        <div *ngIf="selectedTab === 'professores'" class="p-4 space-y-4">
+
+            <!-- Lista atual -->
+            <div>
+                <h2 class="text-sm font-semibold text-gray-800 mb-2">Professores desta turma</h2>
+
+                <div *ngIf="!turma.teachers || turma.teachers.length === 0" class="text-sm text-gray-500">
+                    Nenhum professor associado a esta turma.
+                </div>
+
+                <ul *ngIf="turma.teachers && turma.teachers.length > 0"
+                    class="divide-y divide-gray-200 rounded-md border border-gray-200 bg-white">
+                    <li *ngFor="let prof of turma.teachers" class="flex items-center justify-between px-3 py-2">
+                        <div>
+                            <p class="text-sm font-medium text-gray-800">
+                                {{ prof.name }}
+                            </p>
+                            <p class="text-xs text-gray-500">
+                                {{ prof.email }}
+                            </p>
+                        </div>
+                        <button (click)="removerProfessor(prof.id)"
+                            class="text-xs text-red-600 hover:bg-red-50 rounded px-2 py-1">
+                            Remover
+                        </button>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Adicionar -->
+            <div class="pt-2 border-t border-gray-200">
+                <h3 class="text-sm font-semibold text-gray-800 mb-2">Adicionar professores</h3>
+
+                <div class="flex items-center gap-2 mb-2">
+                    <input type="text" [(ngModel)]="searchProfessor" placeholder="Pesquisar por nome ou e-mail"
+                        class="w-full rounded-md border px-3 py-1.5 text-sm focus:ring-blue-500 focus:border-blue-500" />
+                </div>
+
+                <div class="max-h-52 overflow-y-auto border rounded-md bg-gray-50">
+                    <div *ngIf="filteredAvailableTeachers().length === 0" class="p-3 text-xs text-gray-500">
+                        Nenhum professor disponível para adicionar.
+                    </div>
+
+                    <div *ngFor="let prof of filteredAvailableTeachers()"
+                        class="flex items-center gap-2 px-3 py-1.5 text-sm">
+                        <input type="checkbox" [checked]="isTeacherSelected(prof.id)"
+                            (change)="toggleTeacherSelection(prof.id)" class="rounded" />
+                        <div>
+                            <p class="font-medium text-gray-800">{{ prof.name }}</p>
+                            <p class="text-xs text-gray-500">{{ prof.email }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-2 text-right">
+                    <button (click)="adicionarProfessores()" [disabled]="selectedTeacherIds.length === 0"
+                        class="px-4 py-2 text-xs rounded-md bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50">
+                        Adicionar selecionados
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab: Alunos -->
+        <div *ngIf="selectedTab === 'alunos'" class="p-4 space-y-4">
+
+            <!-- Lista atual -->
+            <div>
+                <h2 class="text-sm font-semibold text-gray-800 mb-2">Alunos desta turma</h2>
+
+                <div *ngIf="!turma.students || turma.students.length === 0" class="text-sm text-gray-500">
+                    Nenhum aluno matriculado nesta turma.
+                </div>
+
+                <ul *ngIf="turma.students && turma.students.length > 0"
+                    class="divide-y divide-gray-200 rounded-md border border-gray-200 bg-white">
+                    <li *ngFor="let aluno of turma.students" class="flex items-center justify-between px-3 py-2">
+                        <div>
+                            <p class="text-sm font-medium text-gray-800">
+                                {{ aluno.name }}
+                            </p>
+                            <p class="text-xs text-gray-500">
+                                {{ aluno.email }}
+                            </p>
+                        </div>
+                        <button (click)="removerAluno(aluno.id)"
+                            class="text-xs text-red-600 hover:bg-red-50 rounded px-2 py-1">
+                            Remover
+                        </button>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Adicionar -->
+            <div class="pt-2 border-t border-gray-200">
+                <h3 class="text-sm font-semibold text-gray-800 mb-2">Adicionar alunos</h3>
+
+                <div class="flex items-center gap-2 mb-2">
+                    <input type="text" [(ngModel)]="searchAluno" placeholder="Pesquisar por nome ou e-mail"
+                        class="w-full rounded-md border px-3 py-1.5 text-sm focus:ring-blue-500 focus:border-blue-500" />
+                </div>
+
+                <div class="max-h-52 overflow-y-auto border rounded-md bg-gray-50">
+                    <div *ngIf="filteredAvailableStudents().length === 0" class="p-3 text-xs text-gray-500">
+                        Nenhum aluno disponível para adicionar.
+                    </div>
+
+                    <div *ngFor="let aluno of filteredAvailableStudents()"
+                        class="flex items-center gap-2 px-3 py-1.5 text-sm">
+                        <input type="checkbox" [checked]="isStudentSelected(aluno.id)"
+                            (change)="toggleStudentSelection(aluno.id)" class="rounded" />
+                        <div>
+                            <p class="font-medium text-gray-800">{{ aluno.name }}</p>
+                            <p class="text-xs text-gray-500">{{ aluno.email }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-2 text-right">
+                    <button (click)="adicionarAlunos()" [disabled]="selectedStudentIds.length === 0"
+                        class="px-4 py-2 text-xs rounded-md bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50">
+                        Adicionar selecionados
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
