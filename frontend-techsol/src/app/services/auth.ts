@@ -1,6 +1,6 @@
 import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, BehaviorSubject, tap, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { Router } from '@angular/router';
@@ -54,28 +54,32 @@ export class Auth {
   // ============================================================
   // LOGIN
   // ============================================================
-  login(credentials: { login: string, password: string }): Observable<any> {
-    return this.http.post<any>(`${this.apiUrl}/login`, credentials).pipe(
-      tap(response => {
+ login(credentials: { login: string, password: string }): Observable<any> {
+    // 1. Define os headers obrigatórios para API
+    const httpOptions = {
+      headers: new HttpHeaders({
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      })
+    };
 
+    // 2. Passa o httpOptions como terceiro argumento
+    return this.http.post<any>(`${this.apiUrl}/login`, credentials, httpOptions).pipe(
+      tap(response => {
         // --- LOGIN COM TOKEN FINAL ---
         if (response.access_token) {
           this.storeFinalAuth(response);
           this.router.navigate(['/app/dashboard']);
         }
-
         // --- LOGIN COM TOKEN TEMPORÁRIO ---
         else if (response.temporary_token) {
-          // Salvar como siac_token para o interceptor usar nas próximas requisições
           if (isPlatformBrowser(this.platformId)) {
             localStorage.setItem('siac_token', response.temporary_token);
             localStorage.setItem('siac_user', JSON.stringify(response.user));
           }
-
           this.currentUserSubject.next(response.user);
           this.router.navigate(['/auth/select-profile']);
         }
-
       })
     );
   }

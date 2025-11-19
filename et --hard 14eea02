@@ -1,0 +1,42 @@
+[33m14eea02[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/last-changes[m[33m, [m[1;31morigin/HEAD[m[33m)[m Merge branch 'main' into last-changes
+[33md22cba1[m restore app layout
+[33mcf682da[m hamburguer
+[33mb61a4c7[m Merge branch 'main' into last-changes v2
+[33mc5d37d7[m dados mockados painel de monitoramento
+[33m4b4ab52[m Merge branch 'main' into last-changes
+[33m0ae43e2[m merge main
+[33mb6c7b34[m selecao
+[33m34bdbff[m responsive and last adjustments
+[33m03b3e21[m visual e assessments
+[33mfc34b11[m reports
+[33m6b66255[m Merge branch 'main' of https://github.com/davicz/fullstack-senai
+[33m8d05621[m competencias
+[33m0714c9f[m Merge pull request #1 from davicz/schools-added
+[33m695bdb7[m[33m ([m[1;31morigin/schools-added[m[33m)[m Merge main e resolução de conflitos
+[33m945fd15[m schools component added with new migration
+[33m13099f1[m competencias e turmas
+[33m196d059[m mudancas api e front
+[33m17aa7a2[m mudancas api e front
+[33m851904c[m dashboard graficos
+[33m7cee27d[m Merge branch 'main' of https://github.com/davicz/fullstack-senai
+[33mf6c55f9[m dashboard panel
+[33m203ab24[m Delete techsol-api/techsol-db-diagram.png:Zone.Identifier
+[33mdf5c54c[m fix: integracao de invites
+[33m3d290b2[m fix: integracao de invites
+[33mbd1268c[m fix: integracao de invites
+[33mcaafaab[m fix: login error msg. users filter fix
+[33mccf4028[m fix: ajustes de funcionalidade no dashboard
+[33m7c4025f[m fix: ajustes no profile selector
+[33m151c3c0[m feat(auth): implement login flow and redirection logic
+[33m18285d8[m feat(frontend): add initial structure for siac-frontend
+[33m42f2ee7[m feat(api): complete user management filters and class association endpoints
+[33mf7b302b[m feat(evaluations): implement endpoint for teachers to grade answers
+[33mb0ba575[m feat(evaluations): implement evaluation listing for students based on enrollment
+[33m6bde23c[m feat(evaluations): implement endpoint for students to submit answers
+[33mb69b8a5[m feat(academic): implement question management with separate options table
+[33m781cf4b[m feat(academic): implement endpoint to associate users with classes
+[33mbd9d580[m feat(academic): implement api endpoints for course and class management
+[33m6d92319[m refactor(auth): implement two-step login for multiple user profiles
+[33m623f4f8[m feat(api): import and apply refactoring for school management system
+[33macd864f[m Fix: Corrige o rastreamento dos arquivos da API e do Frontend
+[33mefffe73[m initial commit
