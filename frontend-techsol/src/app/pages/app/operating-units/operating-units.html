@@ -1,0 +1,227 @@
+<div class="mb-4 flex items-center justify-between">
+    <h1 class="text-xl font-semibold text-gray-800">Escolas</h1>
+
+    <button (click)="abrirModalNova()"
+        class="flex items-center gap-2 rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow hover:bg-blue-700 transition">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
+        </svg>
+        Cadastrar escola
+    </button>
+</div>
+
+<div class="rounded-md bg-white p-4 shadow mb-4">
+    <div class="flex items-center justify-between mb-3">
+        <p class="text-gray-800 text-sm font-medium">Filtros:</p>
+        
+        <button (click)="loadUnits()"
+            class="p-2 rounded-md hover:bg-gray-200 transition flex items-center justify-center"
+            title="Recarregar lista">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
+                stroke="currentColor" class="h-5 w-5 text-gray-700">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M16.023 9.348h4.992V4.356m-16.008.087A9.004 9.004 0 0112 3c4.97 0 9 4.03 9 9" />
+                <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M7.977 14.652H2.985v4.992m16.008-.087A9.004 9.004 0 0112 21c-4.97 0-9-4.03-9-9" />
+            </svg>
+        </button>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-3">
+        
+        <div>
+            <label class="block text-xs font-medium text-gray-700 mb-1">DR:</label>
+            <select [(ngModel)]="filtroDR"
+                class="w-full rounded-md border px-3 py-1.5 text-sm focus:ring-blue-500 focus:border-blue-500">
+                <option [ngValue]="null">Regional</option>
+                <option *ngFor="let dr of regionalDepartments" [ngValue]="dr.id">{{ dr.acronym || dr.name }}</option>
+            </select>
+        </div>
+
+        <div>
+            <label class="block text-xs font-medium text-gray-700 mb-1">Cidade:</label>
+            <input type="text" [(ngModel)]="filtroCidade" placeholder="Buscar por cidade"
+                class="w-full rounded-md border px-3 py-1.5 text-sm focus:ring-blue-500 focus:border-blue-500" />
+        </div>
+
+        <div>
+            <label class="block text-xs font-medium text-gray-700 mb-1">Escola:</label>
+            <input type="text" [(ngModel)]="filtroNome" placeholder="Nome da escola"
+                class="w-full rounded-md border px-3 py-1.5 text-sm focus:ring-blue-500 focus:border-blue-500" />
+        </div>
+
+        <div>
+            <label class="block text-xs font-medium text-gray-700 mb-1">Envio da Av. Conclusão:</label>
+            <input type="number" [(ngModel)]="filtroEnvio" placeholder="Quantidade de dias"
+                class="w-full rounded-md border px-3 py-1.5 text-sm focus:ring-blue-500 focus:border-blue-500" />
+        </div>
+
+        <div>
+            <label class="block text-xs font-medium text-gray-700 mb-1">Porcentagem de aprovação:</label>
+            <input type="number" [(ngModel)]="filtroAprovacao" placeholder="Porcentagem de ap..."
+                class="w-full rounded-md border px-3 py-1.5 text-sm focus:ring-blue-500 focus:border-blue-500" />
+        </div>
+    </div>
+
+    <div class="flex gap-2 mt-3">
+        <button (click)="aplicarFiltros()"
+            class="px-4 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 transition font-medium">
+            Filtrar
+        </button>
+        <button (click)="limparFiltros()"
+            class="px-4 py-2 bg-blue-50 text-blue-600 text-sm rounded-md hover:bg-blue-100 transition font-medium">
+            Limpar
+        </button>
+    </div>
+</div>
+
+<div class="mb-4">
+    <p class="text-sm text-gray-600">
+        <span class="text-blue-600 font-bold text-lg">{{ filteredUnits.length }}</span>
+        <span class="font-medium"> escolas listadas.</span>
+    </p>
+</div>
+
+<div class="rounded-md bg-white shadow overflow-hidden">
+    
+    <div *ngIf="isLoading" class="p-8 text-gray-500 text-sm text-center flex flex-col items-center">
+        <svg class="animate-spin h-8 w-8 text-blue-600 mb-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+        Carregando escolas...
+    </div>
+
+    <div *ngIf="!isLoading" class="overflow-x-auto">
+        <table class="w-full text-sm text-left">
+            <thead class="bg-gray-50 border-b text-gray-700 font-medium uppercase text-xs">
+                <tr>
+                    <th class="px-4 py-3 w-16">DR ▾</th>
+                    <th class="px-4 py-3">Escola ▾</th>
+                    <th class="px-4 py-3">Cidade ▾</th>
+                    <th class="px-4 py-3">Envio da Av. Conclusão ▾</th>
+                    <th class="px-4 py-3">Porcentagem de aprovação ▾</th>
+                    <th class="px-4 py-3 text-center">Ações</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200">
+                <tr *ngIf="filteredUnits.length === 0">
+                    <td colspan="6" class="px-4 py-8 text-center text-gray-400">
+                        Nenhuma escola encontrada com os filtros atuais.
+                    </td>
+                </tr>
+
+                <tr *ngFor="let unit of filteredUnits" class="hover:bg-gray-50 transition group">
+                    <td class="px-4 py-4 font-medium text-gray-900">
+                        {{ getDrAcronym(unit.regional_department?.name) }}
+                    </td>
+
+                    <td class="px-4 py-4 text-gray-700">
+                        <div class="font-medium text-gray-900">{{ unit.code }} {{ unit.name }}</div>
+                        <div class="text-xs text-gray-500" *ngIf="unit.code">Cód: {{ unit.code }}</div>
+                    </td>
+
+                    <td class="px-4 py-4 text-gray-700 uppercase">
+                        {{ unit.city || '—' }}
+                    </td>
+
+                    <td class="px-4 py-4 text-gray-700">
+                        {{ unit.days_submission || '0' }}
+                    </td>
+
+                    <td class="px-4 py-4 text-gray-700">
+                        {{ unit.approval_percentage || '0' }}
+                    </td>
+
+                    <td class="px-4 py-4 text-center">
+                        <button (click)="abrirModalEditar(unit)" class="p-1.5 hover:bg-blue-50 text-gray-500 hover:text-blue-600 rounded transition"
+                            title="Editar Escola">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
+                            </svg>
+                        </button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div *ngIf="isModalOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
+    (click.self)="fecharModal()" tabindex="-1" (keydown.escape)="fecharModal()">
+
+    <div class="flex w-full max-w-lg flex-col rounded-lg bg-white shadow-2xl transform transition-all">
+
+        <div class="border-b px-6 py-4 flex justify-between items-center">
+            <div>
+                <h2 class="text-lg font-bold text-gray-800">
+                    {{ isEditing ? 'Editar Escola' : 'Nova Escola' }}
+                </h2>
+                <p class="text-gray-500 text-sm mt-0.5">Preencha as informações da unidade operacional.</p>
+            </div>
+            <button (click)="fecharModal()" class="text-gray-400 hover:text-gray-600">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+
+        <div class="p-6 space-y-4">
+            
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Departamento Regional *</label>
+                <select [(ngModel)]="unitForm.regional_department_id"
+                    class="w-full rounded-md border-gray-300 shadow-sm px-3 py-2 text-sm focus:border-blue-500 focus:ring-blue-500 bg-white">
+                    <option [ngValue]="null">Selecione o DR</option>
+                    <option *ngFor="let dr of regionalDepartments" [ngValue]="dr.id">{{ dr.name }}</option>
+                </select>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Nome da Escola *</label>
+                <input type="text" [(ngModel)]="unitForm.name" placeholder="Ex: Escola SENAI Roberto Simonsen"
+                    class="w-full rounded-md border-gray-300 shadow-sm px-3 py-2 text-sm focus:border-blue-500 focus:ring-blue-500" />
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Código</label>
+                    <input type="text" [(ngModel)]="unitForm.code" placeholder="Ex: 1.01"
+                        class="w-full rounded-md border-gray-300 shadow-sm px-3 py-2 text-sm focus:border-blue-500 focus:ring-blue-500" />
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Cidade *</label>
+                    <input type="text" [(ngModel)]="unitForm.city" placeholder="SÃO PAULO"
+                        class="w-full rounded-md border-gray-300 shadow-sm px-3 py-2 text-sm focus:border-blue-500 focus:ring-blue-500 uppercase" />
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4 pt-2 border-t mt-2">
+                <div>
+                    <label class="block text-xs font-medium text-gray-500 mb-1">Dias p/ Envio</label>
+                    <input type="number" [(ngModel)]="unitForm.days_submission" placeholder="10"
+                        class="w-full rounded-md border-gray-300 shadow-sm px-3 py-2 text-sm focus:border-blue-500 focus:ring-blue-500" />
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-500 mb-1">% Aprovação Meta</label>
+                    <input type="number" [(ngModel)]="unitForm.approval_percentage" placeholder="60"
+                        class="w-full rounded-md border-gray-300 shadow-sm px-3 py-2 text-sm focus:border-blue-500 focus:ring-blue-500" />
+                </div>
+            </div>
+
+        </div>
+
+        <div class="flex justify-end gap-3 border-t bg-gray-50 p-4 rounded-b-lg">
+            <button (click)="fecharModal()"
+                class="rounded-md px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 transition">
+                Cancelar
+            </button>
+
+            <button (click)="salvarUnit()" 
+                class="rounded-md bg-blue-600 px-6 py-2 text-sm font-medium text-white shadow hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition">
+                {{ isEditing ? 'Salvar Alterações' : 'Cadastrar' }}
+            </button>
+        </div>
+
+    </div>
+</div>

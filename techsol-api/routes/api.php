@@ -21,6 +21,7 @@ Route::post('/login', [AuthController::class, 'login']);
 // Rota de Registro (Pública, mas validada pelo token no controller)
 Route::post('/register', [AuthController::class, 'register']);
 
+
 // Agrupando rotas que precisam de autenticação
 Route::middleware('auth:sanctum')->group(function () {
 
@@ -46,8 +47,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/users/{user}', [UserController::class, 'show']);
     Route::put('/users/{user}', [UserController::class, 'update']);
 
-    Route::apiResource('regional-departments', RegionalDepartmentController::class);
     Route::apiResource('operational-units', OperationalUnitController::class);
+    Route::get('regional-departments', [RegionalDepartmentController::class, 'index']);
+
 
     Route::apiResource('courses', CourseController::class);
     Route::apiResource('classes', SchoolClassController::class);

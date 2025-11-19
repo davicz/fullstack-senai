@@ -6,6 +6,7 @@ import { AppLayoutComponent } from './layouts/app/app';
 import { Invites } from './pages/app/invites/invites';
 import { Panel } from './pages/app/panel/panel';
 import { Turmas } from './pages/app/turmas/turmas';
+import { OperatingUnits } from './pages/app/operating-units/operating-units';
 import { authGuard } from './services/auth-guard';
 import { Landing } from './pages/landing/landing';
 
@@ -33,11 +34,12 @@ export const routes: Routes = [
     component: AppLayoutComponent,
     canActivate: [authGuard],
     children: [
-      { path: 'invites', component: Invites },
-      { path: 'dashboard', component: Panel },
-      { path: 'turmas', component: Turmas },
+      { path: 'convites', component: Invites, title: 'Convites' },
+      { path: 'dashboard', component: Panel, title: 'Painel Inicial' },
+      { path: 'turmas', component: Turmas, title: 'Turmas' },
+      { path: 'escolas', component: OperatingUnits, title: 'Escolas' },
       {
-        path: 'users',
+        path: 'usuarios',
         loadComponent: () =>
           import('./pages/app/users/users').then(m => m.Users),
       },
