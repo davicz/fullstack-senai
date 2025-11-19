@@ -1,7 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterOutlet, RouterLink, Router } from '@angular/router';
+import { RouterOutlet, RouterLink, Router, NavigationEnd } from '@angular/router';
 import { Auth } from '../../services/auth';
+import { filter } from 'rxjs/operators';
 
 @Component({
   selector: 'app-appLayout',
@@ -16,6 +17,9 @@ export class AppLayoutComponent implements OnInit {
   userRoles: string[] = [];
   userHasMultipleProfiles = false;
   
+  // CONTROLE DO MENU MOBILE
+  isSidebarOpen = false;
+
   // Mapeamento de slug para nome amigável
   roleNames: {[key: string]: string} = {
     'national_admin': 'Administrador Nacional',
@@ -28,13 +32,19 @@ export class AppLayoutComponent implements OnInit {
   constructor(
     private auth: Auth,
     private router: Router
-  ) {}
+  ) {
+    // Fecha o menu automaticamente ao trocar de rota (útil no mobile)
+    this.router.events.pipe(
+      filter(event => event instanceof NavigationEnd)
+    ).subscribe(() => {
+      this.isSidebarOpen = false;
+    });
+  }
 
   ngOnInit(): void {
     this.auth.currentUser.subscribe(user => {
       if (user) {
         this.user = user;
-        // Verificação de segurança: garante que roles é um array
         if (Array.isArray(user.roles)) {
             this.userRoles = user.roles.map((role: any) => role.slug);
             this.userHasMultipleProfiles = user.roles.length > 1;
@@ -56,26 +66,19 @@ export class AppLayoutComponent implements OnInit {
     );
   }
   
-  // FUNÇÃO CORRIGIDA E SEGURA
   getCurrentRoleName(): string {
-    // 1. Se não tiver usuário carregado ainda
     if (!this.user) return 'Carregando...';
 
-    // 2. Tenta pegar o perfil selecionado
     let slug = this.user.selected_role;
 
-    // 3. Fallback: Se não tiver perfil selecionado explícito, usa o primeiro da lista de roles
     if (!slug && this.userRoles.length > 0) {
         slug = this.userRoles[0];
     }
 
-    // 4. Validação de Tipo: Só tenta fazer replace se for texto (string)
     if (typeof slug === 'string') {
-        // Retorna o nome amigável do mapa ou formata o slug removendo underline
         return this.roleNames[slug] || slug.replace(/_/g, ' ').toUpperCase();
     }
     
-    // 5. Se chegou aqui (é nulo, número ou objeto desconhecido), retorna um genérico para não travar a tela
     return 'Perfil Ativo';
   }
 
@@ -85,5 +88,10 @@ export class AppLayoutComponent implements OnInit {
 
   logout(): void {
     this.auth.logout();
+  }
+
+  // FUNÇÃO PARA ABRIR/FECHAR MENU MOBILE
+  toggleSidebar(): void {
+    this.isSidebarOpen = !this.isSidebarOpen;
   }
 }
