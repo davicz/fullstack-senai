@@ -6,6 +6,7 @@ import { AppLayoutComponent } from './layouts/app/app';
 import { Invites } from './pages/app/invites/invites';
 import { Panel } from './pages/app/panel/panel';
 import { Turmas } from './pages/app/turmas/turmas';
+import { OperatingUnits } from './pages/app/operating-units/operating-units';
 import { authGuard } from './services/auth-guard';
 import { Landing } from './pages/landing/landing';
 import { TurmaDetalhes } from './pages/app/turmas/turma-detalhes';
@@ -33,12 +34,18 @@ export const routes: Routes = [
     component: AppLayoutComponent,
     canActivate: [authGuard],
     children: [
-      { path: 'dashboard', component: Panel },
-      { path: 'invites', component: Invites },
-      { path: 'users', component: Users },
+      { path: 'convites', component: Invites, title: 'Convites' },
+      { path: 'dashboard', component: Panel, title: 'Painel Inicial' },
       { path: 'turmas', component: Turmas },
       { path: 'turmas/:id', component: TurmaDetalhes },
-      { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
+      { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
+      { path: 'escolas', component: OperatingUnits, title: 'Escolas' },
+      { path: 'users', component: Users },
+      {
+        path: 'usuarios',
+        loadComponent: () =>
+          import('./pages/app/users/users').then(m => m.Users),
+      },
     ]
   },
   
